@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base target="_top">
+<title>ระบบ กยศ. PIM</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --p:#0A5C3E; --pm:#128159; --pg:#1FA576; --pl:#EAF6EF; --pb:#A7DEC3;
+  --gold:#BB9A45; --goldl:#FFFBEF; --goldb:#E3D3A0;
+  --navy:#061C14; --ink:#0A1810; --ink2:#1A2C22; --ink3:#59705F; --ink4:#95AC9E;
+  --bg:#F3F8F5; --white:#fff; --ln:#E3EFE8;
+  --red:#DC2626; --redl:#FEF2F2; --redb:#FECACA;
+}
+body.dark{
+  --pl:#123422; --pb:#2E6B47; --goldl:#2A2211; --goldb:#5C4A1E;
+  --ink:#E8F3EC; --ink2:#C7DED0; --ink3:#8FAE9C; --ink4:#5C7768;
+  --bg:#0A1712; --white:#122016; --ln:#213A2C;
+  --redl:#301818; --redb:#5C2A2A;
+}
+body.dark .app-shell{background:var(--bg);}
+body.dark{background:#050D08;}
+body, .card, .sidebar, .topbar, .seal-card, .qa-card, .gate-card, .doc-btn-card, .delivery-card, .contact-card, .faq-item, .verify-card, .cd-block, .doc-item, .modal-box, .filename-box, .cd-unit{transition:background-color .25s ease, color .25s ease, border-color .25s ease;}
+
+/* dark-mode contrast fixes: several status/warning text colors were hardcoded for the light background */
+body.dark .gate-warn{color:#FCA5A5;}
+body.dark .cd-status.danger{color:#FCA5A5;}
+body.dark .cd-status.upcoming{color:#D4B872;}
+body.dark .cd-block.new .cd-status.active,
+body.dark .cd-block.new .cd-status.upcoming{color:#D4B872;}
+body.dark .err-msg{color:#FCA5A5;}
+body.dark .seal-card.pending .seal-txt{color:#D4B872;}
+body.dark .seal-card.pending .seal-eyebrow{color:#D4B872;}
+body.dark .doc-image-hd{color:#FCA5A5;}
+body.dark .warn-note{color:#FCA5A5;}
+body.dark .cl-note{color:#D4B872;}
+body.dark .cl-set-hd.cls2{background:#12233F; color:#8FB6F5;}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--ink); font-size:15px; line-height:1.7;}
+.app-shell{display:flex; min-height:100vh; max-width:1680px; margin:0 auto; background:var(--bg);}
+h1,h2,h3,.disp{font-family:'Prompt',sans-serif;}
+button{font-family:inherit; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;}
+button:active{transform:scale(.97);}
+button:disabled{cursor:not-allowed;}
+a{transition:opacity .15s ease;}
+a{color:inherit;}
+input,textarea{font-family:inherit;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:264px; background:linear-gradient(180deg,#071C46 0%,#0A2F6F 58%,#071A3D 100%); color:#fff; display:flex; flex-direction:column; flex-shrink:0; position:sticky; top:0; height:100vh; z-index:50; transition:transform .25s ease; box-shadow:10px 0 28px rgba(7,28,70,.14);}
+.sb-brand{display:flex; align-items:center; gap:12px; padding:22px 20px; border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-logo{width:42px; height:42px; border-radius:12px; background:linear-gradient(150deg,#2D8CFF,#0B63F6 58%,#1746C7); display:flex; align-items:center; justify-content:center; font-family:'Prompt'; font-weight:800; font-size:12px; flex-shrink:0; box-shadow:0 6px 16px rgba(11,99,246,.34), inset 0 0 0 1px rgba(255,255,255,.2);}
+.sb-brand-name{font-family:'Prompt'; font-weight:700; font-size:14px; line-height:1.3;}
+.sb-brand-sub{font-size:10.5px; color:rgba(255,255,255,.62); margin-top:2px;}
+.sb-close{margin-left:auto; display:none; width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.14); color:#fff; font-size:18px; align-items:center; justify-content:center;}
+
+.sb-student{padding:14px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:none;}
+.sb-student.show{display:block;}
+.sb-student-label{font-size:10.5px; color:rgba(255,255,255,.58); text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px;}
+.sb-student-id{font-family:'Prompt'; font-weight:600; font-size:14px; letter-spacing:.03em; display:flex; align-items:center; justify-content:space-between; gap:8px;}
+.sb-logout{background:rgba(255,255,255,.1); border:none; color:rgba(255,255,255,.75); font-size:11px; padding:4px 9px; border-radius:7px; font-weight:600;}
+
+.sb-nav{flex:1; padding:14px 12px; overflow-y:auto;}
+.sb-nav-item{display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; color:rgba(255,255,255,.78); font-size:13.5px; font-weight:500; margin-bottom:2px; cursor:pointer; position:relative; transition:background .15s, transform .15s, box-shadow .15s; border:1px solid transparent; background:none; width:100%; text-align:left;}
+.sb-nav-item:hover{background:rgba(94,162,255,.14); color:#fff; transform:translateX(2px);}
+.sb-nav-item.active{background:linear-gradient(135deg,#0B63F6 0%,#2455D9 100%); color:#fff; font-weight:700; border-color:rgba(255,255,255,.2); box-shadow:0 7px 18px rgba(11,99,246,.3), inset 3px 0 0 #8CC4FF;}
+.sb-nav-item:disabled{opacity:.35; cursor:not-allowed;}
+.sb-nav-ico{width:18px; text-align:center; flex-shrink:0; font-size:15px;}
+.sb-nav-badge{margin-left:auto; background:var(--red); color:#fff; font-size:10.5px; font-weight:800; padding:1px 7px; border-radius:99px; min-width:18px; text-align:center;}
+
+.sb-foot{padding:16px; border-top:1px solid rgba(255,255,255,.08);}
+.sb-foot-label{font-size:10.5px; color:rgba(255,255,255,.58); text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px; padding:0 4px;}
+.sb-contact-btn{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:11px; background:rgba(255,255,255,.08); margin-bottom:6px; text-decoration:none; color:#fff; font-size:13px; font-weight:600; transition:background .15s, transform .15s; border:1px solid rgba(255,255,255,.06);}
+.sb-contact-btn:hover{background:rgba(94,162,255,.16); transform:translateX(2px);}
+.sb-contact-ico{width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;}
+.sb-contact-ico.line{background:#06C755;}
+.sb-contact-ico.tel{background:#0B63F6;}
+.sb-contact-ico.fb{background:#1877F2;}
+
+.sb-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:45;}
+.sb-overlay.show{display:block;}
+
+/* ── MAIN ── */
+.main{flex:1; min-width:0; display:flex; flex-direction:column;}
+.topbar{background:var(--white); border-bottom:1px solid var(--ln); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-shrink:0;}
+.tb-left{display:flex; align-items:center; gap:14px; min-width:0;}
+.hamburger{display:none; align-items:center; justify-content:center; gap:7px; background:linear-gradient(135deg,#0B63F6 0%,#1746C7 100%); border:2px solid #5EA2FF; color:#fff; min-width:92px; height:44px; padding:0 14px; border-radius:13px; font-size:14px; font-weight:800; flex-shrink:0; box-shadow:0 7px 18px rgba(11,99,246,.32), 0 0 0 3px rgba(94,162,255,.12); position:relative; overflow:visible;}
+.hamburger .hamburger-ico{font-size:20px; line-height:1;}
+.hamburger .hamburger-label{font-family:'Prompt',sans-serif; letter-spacing:.01em;}
+.hamburger::after{content:'คลิก'; position:absolute; right:-8px; top:-10px; background:#FFD84D; color:#17335C; border:2px solid #fff; border-radius:999px; padding:1px 7px 2px; font-family:'Prompt',sans-serif; font-size:9.5px; font-weight:800; line-height:1.35; box-shadow:0 3px 8px rgba(23,51,92,.22); transform:rotate(5deg);}
+.hamburger::before{content:''; position:absolute; inset:-5px; border:2px solid rgba(11,99,246,.42); border-radius:16px; opacity:0; pointer-events:none;}
+.hamburger:hover{background:linear-gradient(135deg,#1572FF 0%,#2455D9 100%); box-shadow:0 9px 24px rgba(11,99,246,.42), 0 0 0 4px rgba(94,162,255,.16);}
+@keyframes menuAttention{0%,100%{transform:scale(1); box-shadow:0 7px 18px rgba(11,99,246,.32),0 0 0 3px rgba(94,162,255,.12);}45%{transform:scale(1.07); box-shadow:0 10px 28px rgba(11,99,246,.5),0 0 0 8px rgba(94,162,255,.12);}70%{transform:scale(1.02);}}
+@keyframes menuRing{0%{transform:scale(.96); opacity:.75;}100%{transform:scale(1.15); opacity:0;}}
+.topbar h1{font-size:20px; font-weight:700; color:var(--ink);}
+.topbar p{font-size:12px; color:var(--ink3); margin-top:2px;}
+.tb-chip{display:flex; align-items:center; gap:6px; background:var(--pl); color:var(--p); border:1px solid var(--pb); font-size:11.5px; font-weight:700; padding:6px 12px; border-radius:99px; white-space:nowrap;}
+.tb-right{display:flex; align-items:center; gap:10px; flex-shrink:0;}
+.dm-toggle{width:36px; height:36px; border-radius:10px; background:var(--bg); border:1px solid var(--ln); font-size:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.dm-toggle:hover{background:var(--pl); border-color:var(--pb);}
+
+.content{padding:26px 28px 90px; max-width:980px; margin:0 auto; flex:1; width:100%;}
+.view-enter > *{animation:cardStagger .38s cubic-bezier(.22,1,.36,1) backwards;}
+.view-enter > *:nth-child(1){animation-delay:.02s;}
+.view-enter > *:nth-child(2){animation-delay:.07s;}
+.view-enter > *:nth-child(3){animation-delay:.12s;}
+.view-enter > *:nth-child(4){animation-delay:.17s;}
+.view-enter > *:nth-child(n+5){animation-delay:.2s;}
+@keyframes cardStagger{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
+@media(prefers-reduced-motion:reduce){.view-enter > *{animation:none;}}
+
+.sec-label{font-size:13px; font-weight:700; color:var(--ink2); margin:8px 0 12px; display:flex; align-items:center; gap:8px;}
+.card{background:var(--white); border:1px solid var(--ln); border-radius:18px; padding:22px 24px; box-shadow:0 1px 2px rgba(6,28,20,.03), 0 6px 20px rgba(6,28,20,.03);}
+
+/* ── HOME / GATE (not verified) ── */
+.hero-banner{width:100%; height:auto; border-radius:18px; display:block; margin-bottom:8px; box-shadow:0 1px 2px rgba(6,28,20,.04), 0 12px 28px rgba(6,28,20,.06);}
+.gate-hero{text-align:center; padding:20px 0 30px; position:relative; overflow:hidden;}
+.hero-orb{position:absolute; border-radius:50%; filter:blur(50px); pointer-events:none; z-index:0; opacity:.55;}
+.hero-orb-1{width:340px; height:340px; background:radial-gradient(circle, var(--pg) 0%, transparent 70%); top:-140px; right:-60px; animation:orbFloat1 9s ease-in-out infinite;}
+.hero-orb-2{width:260px; height:260px; background:radial-gradient(circle, var(--gold) 0%, transparent 70%); bottom:-100px; left:-40px; animation:orbFloat2 11s ease-in-out infinite;}
+.hero-orb-3{width:200px; height:200px; background:radial-gradient(circle, var(--p) 0%, transparent 70%); top:20%; left:50%; animation:orbFloat3 13s ease-in-out infinite;}
+@keyframes orbFloat1{0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-24px,26px) scale(1.08);}}
+@keyframes orbFloat2{0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(20px,-20px) scale(1.1);}}
+@keyframes orbFloat3{0%,100%{transform:translate(-50%,0) scale(1);} 50%{transform:translate(-50%,-18px) scale(.94);}}
+.gate-hero > *:not(.hero-orb){position:relative; z-index:1;}
+@media(prefers-reduced-motion:reduce){.hero-orb{animation:none;}}
+@media(max-width:640px){.hero-orb{filter:blur(36px); opacity:.4;}}
+.hero-eyebrow{display:inline-flex; align-items:center; gap:7px; background:var(--pl); color:var(--p); border:1.5px solid var(--pb); padding:7px 16px; border-radius:99px; font-size:12px; font-weight:700; margin-bottom:18px;}
+.gate-warn{display:flex; gap:12px; align-items:flex-start; max-width:640px; margin:0 auto 24px; background:var(--redl); border:1.5px solid var(--redb); border-radius:14px; padding:14px 16px; font-size:12.5px; color:#7A1F1F; line-height:1.8;}
+.gw-ico{font-size:18px; flex-shrink:0;}
+.gate-hero .disp{font-size:26px; font-weight:700; margin-bottom:8px;}
+.gate-hero .disp .grad{background:linear-gradient(100deg, var(--pg), var(--p) 60%, var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.gate-hero p{color:var(--ink3); font-size:13.5px; max-width:440px; margin:0 auto;}
+.gate-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:640px; margin:26px auto 0;}
+.gate-card{background:var(--white); border:1.5px solid var(--ln); border-radius:18px; padding:26px 20px; text-align:center; transition:border-color .15s, transform .15s, box-shadow .15s; box-shadow:0 1px 2px rgba(6,28,20,.03), 0 6px 18px rgba(6,28,20,.03);}
+.gate-card:hover{border-color:var(--pb); transform:translateY(-3px); box-shadow:0 14px 32px rgba(6,28,20,.08);}
+.gate-card .gc-ico{font-size:34px; margin-bottom:10px;}
+.gate-card .gc-title{font-weight:700; font-size:15px; margin-bottom:4px;}
+.gate-card .gc-sub{font-size:12px; color:var(--ink3);}
+.gate-card button{width:100%; margin-top:14px; background:var(--p); color:#fff; border:none; padding:11px; border-radius:11px; font-weight:700; font-size:13.5px;}
+.gate-card.old button{background:var(--white); color:var(--p); border:1.5px solid var(--pb);}
+@media(max-width:560px){.gate-grid{grid-template-columns:1fr;}}
+
+/* ── COUNTDOWN CARD ── */
+.cd-wrap{max-width:640px; margin:0 auto 24px;}
+.cd-block{background:var(--white); border:1.5px solid var(--ln); border-radius:16px; padding:16px 18px; margin-bottom:12px;}
+.cd-block-hd{font-size:13px; font-weight:700; color:var(--ink2); margin-bottom:10px; display:flex; align-items:center; gap:7px;}
+.cd-status{display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:4px 12px; border-radius:99px; margin-bottom:10px;}
+.cd-status.active{background:var(--pl); color:var(--p);}
+.cd-status.danger{background:var(--redl); color:#991B1B;}
+.cd-status.upcoming{background:var(--goldl); color:#8A6B1E;}
+.cd-digits{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:8px;}
+.cd-unit{text-align:center; background:var(--p); border-radius:11px; padding:10px 4px; transition:transform .15s;}
+.cd-unit.tick{animation:digitTick .35s ease;}
+@keyframes digitTick{0%{transform:scale(1);}30%{transform:scale(1.08);}100%{transform:scale(1);}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg); opacity:1;} 100%{transform:translateY(100vh) rotate(600deg); opacity:0;}}
+@media(prefers-reduced-motion:reduce){.cd-unit.tick{animation:none;}}
+.cd-num{font-family:'Prompt'; font-size:22px; font-weight:800; color:#fff; display:block; line-height:1;}
+.cd-lbl{font-size:9.5px; color:rgba(255,255,255,.75); margin-top:4px; font-weight:700; text-transform:uppercase; display:block;}
+.cd-note{font-size:11.5px; color:var(--ink4); text-align:center;}
+.cd-block.new .cd-unit{background:var(--gold);}
+.cd-block.new .cd-status.active,.cd-block.new .cd-status.upcoming{background:var(--goldl); color:#8A6B1E;}
+
+/* ── VERIFY FORM ── */
+.verify-card{max-width:420px; margin:20px auto 0; background:var(--white); border:1px solid var(--ln); border-radius:18px; padding:26px 24px; box-shadow:0 1px 2px rgba(6,28,20,.03), 0 10px 28px rgba(6,28,20,.05);}
+.field{margin-bottom:14px;}
+.field label{display:block; font-size:12px; font-weight:700; color:var(--ink2); margin-bottom:6px;}
+.field input{width:100%; padding:11px 14px; border:1.5px solid var(--ln); border-radius:11px; font-size:14.5px; background:var(--bg); outline:none;}
+.field input:focus{border-color:var(--p); background:var(--white);}
+.btn-block{width:100%; background:var(--p); color:#fff; border:none; padding:13px; border-radius:12px; font-weight:700; font-size:14px; margin-top:6px; display:flex; align-items:center; justify-content:center; gap:8px;}
+.spin{width:15px; height:15px; border:2.5px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:spinRotate .7s linear infinite; flex-shrink:0;}
+@keyframes spinRotate{to{transform:rotate(360deg);}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:1.4s;}}
+.err-msg{background:var(--redl); border:1px solid var(--redb); color:#991B1B; font-size:12.5px; padding:10px 13px; border-radius:10px; margin-top:12px; display:none;}
+
+/* ── SEAL STATUS CARD ── */
+.seal-card{background:var(--white); border:1px solid var(--ln); border-radius:22px; padding:32px 28px; display:flex; align-items:center; gap:28px; margin-bottom:22px; position:relative; overflow:hidden; box-shadow:0 1px 2px rgba(6,28,20,.03), 0 12px 32px rgba(6,28,20,.05);}
+.seal-card::before{content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--p),var(--pg),var(--gold));}
+.seal-wrap{flex-shrink:0; width:120px; height:120px;}
+.seal{width:120px; height:120px; border-radius:50%; border:5px solid var(--p); display:flex; align-items:center; justify-content:center; flex-direction:column; background:var(--pl); transform:rotate(-8deg); position:relative; animation:sealStamp .5s cubic-bezier(.22,1.4,.36,1) backwards; animation-delay:.15s;}
+@keyframes sealStamp{0%{transform:scale(2.4) rotate(10deg); opacity:0;} 60%{transform:scale(.94) rotate(-10deg); opacity:1;} 100%{transform:scale(1) rotate(-8deg); opacity:1;}}
+@media(prefers-reduced-motion:reduce){.seal{animation:none;}}
+.seal::after{content:''; position:absolute; inset:9px; border:1.5px dashed var(--pb); border-radius:50%;}
+.seal-ico{font-size:34px; line-height:1;}
+.seal-txt{font-family:'Prompt'; font-weight:800; font-size:12.5px; color:var(--p); margin-top:2px;}
+.seal-info{flex:1; min-width:0;}
+.seal-eyebrow{display:inline-flex; align-items:center; gap:6px; background:var(--pl); color:var(--p); font-size:11.5px; font-weight:700; padding:4px 12px; border-radius:99px; margin-bottom:10px;}
+.seal-title{font-size:19px; font-weight:700; margin-bottom:6px;}
+.seal-desc{font-size:13px; color:var(--ink3); line-height:1.7; margin-bottom:14px; white-space:pre-wrap;}
+.seal-cta{display:inline-flex; align-items:center; gap:8px; background:var(--p); color:#fff; font-weight:700; font-size:13px; padding:11px 20px; border-radius:12px; border:none;}
+.seal-card.fail .seal{border-color:var(--red); background:var(--redl);}
+.seal-card.fail .seal::after{border-color:var(--redb);}
+.seal-card.fail .seal-txt{color:var(--red);}
+.seal-card.fail .seal-eyebrow{background:var(--redl); color:var(--red);}
+.seal-card.fail .seal-cta{background:var(--red);}
+.seal-card.pending .seal{border-color:var(--gold); background:var(--goldl);}
+.seal-card.pending .seal::after{border-color:var(--goldb);}
+.seal-card.pending .seal-txt{color:#8A6B1E;}
+.seal-card.pending .seal-eyebrow{background:var(--goldl); color:#8A6B1E;}
+.seal-card.pending .seal-cta{background:var(--gold); color:#3A2900;}
+@media(max-width:640px){.seal-card{flex-direction:column; text-align:center;}}
+
+.doc-image-box{background:var(--white); border:1.5px solid var(--redb); border-radius:16px; padding:16px 18px; margin-bottom:22px;}
+.doc-image-hd{font-size:12.5px; font-weight:700; color:#991B1B; margin-bottom:10px;}
+.doc-image-frame{border-radius:12px; overflow:hidden; border:1px solid var(--ln); background:var(--bg); position:relative;}
+.doc-image-frame img{width:100%; max-height:360px; object-fit:contain; display:block;}
+
+/* ── FIX STEPS (ไม่ผ่าน) ── */
+.fail-steps{margin-bottom:22px;}
+.fix-step{display:flex; gap:12px; align-items:flex-start; margin-bottom:14px;}
+.fix-sn{width:24px; height:24px; border-radius:50%; background:var(--red); color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.fix-txt{font-size:13px; color:var(--ink2); line-height:1.7; padding-top:2px;}
+.fix-txt code{background:var(--navy); color:var(--goldb); padding:2px 7px; border-radius:5px; font-size:12px;}
+.doc-pin{position:absolute; transform:translate(-50%,-50%); width:24px; height:24px; border-radius:50%; background:var(--red); color:#fff; font-size:11px; font-weight:900; display:flex; align-items:center; justify-content:center; border:2px solid #fff;}
+
+.qa-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:26px;}
+.qa-card{background:var(--white); border:1px solid var(--ln); border-radius:16px; padding:18px; cursor:pointer; transition:border-color .15s, transform .15s, box-shadow .15s; text-align:left; box-shadow:0 1px 2px rgba(6,28,20,.03), 0 6px 18px rgba(6,28,20,.03);}
+.qa-card:hover{border-color:var(--pb); transform:translateY(-2px); box-shadow:0 10px 24px rgba(6,28,20,.07);}
+.qa-ico{width:38px; height:38px; border-radius:11px; background:var(--pl); color:var(--p); display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:10px;}
+.qa-title{font-size:13.5px; font-weight:700;}
+.qa-sub{font-size:11.5px; color:var(--ink3); margin-top:2px;}
+@media(max-width:700px){.qa-grid{grid-template-columns:1fr;}}
+
+.tl-item{display:flex; gap:14px; padding-bottom:20px; position:relative;}
+.tl-item:not(:last-child)::before{content:''; position:absolute; left:15px; top:34px; width:2px; height:calc(100% - 14px); background:var(--ln);}
+.tl-dot{width:32px; height:32px; border-radius:50%; background:var(--pl); border:2px solid var(--pb); display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; z-index:1;}
+.tl-item.fail .tl-dot{background:var(--redl); border-color:var(--redb);}
+.tl-body{flex:1; padding-top:2px;}
+.tl-top{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+.tl-label{font-size:13.5px; font-weight:700;}
+.tl-time{font-size:11.5px; color:var(--ink4);}
+.tl-note{font-size:12.5px; color:var(--ink3); margin-top:4px; line-height:1.6;}
+
+/* ── SUBMIT DOCS VIEW ── */
+.doc-btn-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:640px; margin:0 auto;}
+@media(max-width:560px){.doc-btn-grid{grid-template-columns:1fr;}}
+.doc-btn-card{background:var(--white); border:1.5px solid var(--ln); border-radius:18px; padding:22px 18px; text-align:center; display:flex; flex-direction:column; box-shadow:0 1px 2px rgba(6,28,20,.03), 0 6px 18px rgba(6,28,20,.03);}
+.doc-btn-card .gc-ico{font-size:32px; margin-bottom:8px;}
+.doc-btn-card button{width:100%; margin-top:12px; padding:11px; border-radius:11px; font-weight:700; font-size:13px; border:none; background:var(--p); color:#fff;}
+.doc-btn-card button:disabled{background:#cbd5e1; color:#64748b; cursor:not-allowed;}
+.lock-note{font-size:11.5px; color:var(--ink4); margin-top:8px; min-height:32px; display:flex; align-items:center; justify-content:center; line-height:1.6;}
+
+/* ── DELIVERY ── */
+.delivery-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0;}
+.delivery-card{border:1.5px solid var(--ln); border-radius:14px; padding:16px; cursor:pointer; background:var(--white); transition:border-color .15s, transform .15s, box-shadow .15s; box-shadow:0 1px 2px rgba(6,28,20,.03);}
+.delivery-card:hover{transform:translateY(-2px); box-shadow:0 8px 20px rgba(6,28,20,.06);}
+.delivery-card.selected{border-color:var(--p); border-width:2px; background:var(--pl);}
+.delivery-card .dc-ico{font-size:22px; margin-bottom:6px;}
+.delivery-card .dc-title{font-weight:700; font-size:13px;}
+.delivery-card .dc-desc{font-size:11.5px; color:var(--ink3); margin-top:3px; line-height:1.6;}
+@media(max-width:700px){.delivery-grid{grid-template-columns:1fr;}}
+.ems-box{display:none; margin-top:16px; padding-top:16px; border-top:1px dashed var(--ln);}
+.ems-box.show{display:block;}
+.ems-box textarea{width:100%; min-height:70px; border:1.5px solid var(--ln); border-radius:11px; padding:10px 12px; font-size:13px; background:var(--bg);}
+.btn-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+.btn{padding:11px 18px; border-radius:11px; font-weight:700; font-size:13px; border:none;}
+.btn-dark{background:var(--navy); color:#fff;}
+.btn-ghost{background:var(--white); border:1.5px solid var(--ln); color:var(--ink2);}
+.barcode-box{background:var(--white); border:1.5px solid var(--pb); border-radius:16px; padding:18px; text-align:center; margin-bottom:20px;}
+.barcode-box svg{max-width:100%; height:auto;}
+
+/* ── GUIDE ── */
+.gtab-row{display:flex; gap:10px; margin-bottom:18px;}
+.gtab{flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--ln); background:var(--white); font-weight:700; font-size:13px; color:var(--ink3);}
+.gtab.active{border-color:var(--p); background:var(--pl); color:var(--p);}
+.doc-item{display:flex; gap:12px; background:var(--white); border:1px solid var(--ln); border-radius:12px; padding:13px 15px; margin-bottom:8px;}
+.doc-item.req{border-left:4px solid var(--p);}
+.doc-item.opt{border-left:4px solid var(--gold);}
+.doc-item .di-name{font-weight:700; font-size:13.5px;}
+.doc-item .di-hint{font-size:12px; color:var(--ink3); margin-top:2px; line-height:1.6;}
+.doc-item.prep-checkable{cursor:pointer; align-items:flex-start; transition:background .15s, opacity .15s;}
+.doc-item.prep-checkable:hover{background:var(--bg);}
+.doc-item.prep-checkable:has(.prep-checkbox:checked){opacity:.55;}
+.doc-item.prep-checkable:has(.prep-checkbox:checked) .di-name{text-decoration:line-through;}
+.prep-checkbox{width:19px; height:19px; margin-top:1px; accent-color:var(--p); flex-shrink:0; cursor:pointer;}
+.prep-progress{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+.prep-bar-bg{flex:1; height:8px; background:var(--bg); border-radius:99px; overflow:hidden;}
+.prep-bar-fill{height:100%; background:linear-gradient(90deg,var(--pg),var(--p)); border-radius:99px; transition:width .3s ease;}
+.prep-progress-txt{font-size:11.5px; font-weight:700; color:var(--p); white-space:nowrap;}
+
+.example-preview-frame{width:100%; height:60vh; border:1px solid var(--ln); border-radius:12px;}
+
+/* ── GUIDE: videos + filename example ── */
+.video-row{display:flex; gap:10px; flex-wrap:wrap;}
+.filegroup-box{border:1.5px dashed var(--pb); background:var(--pl); border-radius:14px; padding:14px 16px; margin-bottom:12px;}
+.filegroup-box:last-child{margin-bottom:0;}
+.filegroup-label{font-size:12px; font-weight:800; color:var(--p); margin-bottom:12px;}
+.filegroup-chips{display:flex; align-items:center; flex-wrap:wrap; gap:8px;}
+.fg-chip{display:flex; flex-direction:column; align-items:center; gap:5px; background:var(--white); border:1.5px solid var(--ln); border-radius:12px; padding:10px 12px; min-width:82px; text-align:center;}
+.fg-chip.optional{border-style:dashed; border-color:var(--ink4);}
+.fg-ico{font-size:22px; line-height:1;}
+.fg-name{font-size:10.5px; font-weight:700; line-height:1.5;}
+.fg-arrow{font-size:15px; color:var(--ink4); font-weight:800; flex-shrink:0;}
+.video-link{display:inline-flex; align-items:center; gap:7px; padding:10px 16px; border-radius:11px; background:var(--navy); color:#fff; text-decoration:none; font-size:13px; font-weight:700;}
+.filename-box{background:var(--bg); border:1px dashed var(--ln); border-radius:12px; padding:14px 16px;}
+.fn-label{font-size:10.5px; font-weight:700; color:var(--ink4); text-transform:uppercase; letter-spacing:.05em; margin-bottom:5px;}
+.fn-code{display:block; background:var(--navy); color:var(--goldb); padding:8px 12px; border-radius:8px; font-size:12.5px; font-family:monospace; word-break:break-all;}
+.fn-code.fn-example{color:#7FD87F;}
+.warn-note{background:var(--redl); border:1px solid var(--redb); border-radius:10px; padding:10px 12px; font-size:12px; color:#991B1B; margin-top:12px; line-height:1.7;}
+
+/* ── FAQ ── */
+.faq-item{background:var(--white); border:1px solid var(--ln); border-radius:14px; margin-bottom:8px; overflow:hidden; box-shadow:0 1px 2px rgba(6,28,20,.02); transition:box-shadow .15s;}
+.faq-item:hover{box-shadow:0 6px 16px rgba(6,28,20,.05);}
+.faq-q{padding:14px 16px; font-size:13.5px; font-weight:700; cursor:pointer; display:flex; justify-content:space-between; align-items:center;}
+.faq-a{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+.faq-a-inner{padding:0 16px 14px; font-size:12.5px; color:var(--ink3); line-height:1.7; border-top:1px solid var(--ln);}
+
+/* ── CONTACT ── */
+.contact-grid{display:flex; flex-direction:column; gap:10px; max-width:560px;}
+
+/* ── RESOURCES: ตัวอย่าง & แบบฟอร์ม ── */
+.res-gallery{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px;}
+.res-card{display:block; background:var(--white); border:1px solid var(--ln); border-radius:16px; overflow:hidden; text-decoration:none; color:var(--ink); transition:transform .15s, box-shadow .15s; box-shadow:0 1px 2px rgba(6,28,20,.03);}
+.res-card:hover{transform:translateY(-3px); box-shadow:0 12px 26px rgba(6,28,20,.08);}
+.res-thumb-wrap{aspect-ratio:4/3; background:var(--bg); overflow:hidden;}
+.res-thumb{width:100%; height:100%; object-fit:cover; display:block;}
+.res-card-title{padding:12px 14px; font-size:13px; font-weight:700; line-height:1.5;}
+.res-video-thumb{position:relative;}
+.res-play-btn{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0; }
+.res-play-btn::after{content:'▶'; width:46px; height:46px; border-radius:50%; background:rgba(6,28,20,.65); color:#fff; font-size:16px; display:flex; align-items:center; justify-content:center; padding-left:3px;}
+
+.res-form-row{display:flex; align-items:center; gap:14px; padding:14px 4px; text-decoration:none; color:var(--ink); border-bottom:1px solid var(--ln);}
+.res-form-row:last-child{border-bottom:none;}
+.res-form-row:hover .res-form-title{color:var(--p);}
+.res-form-ico{width:38px; height:38px; border-radius:11px; background:var(--pl); color:var(--p); display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0;}
+.res-form-title{font-size:13.5px; font-weight:700; transition:color .15s;}
+.res-form-desc{font-size:12px; color:var(--ink3); margin-top:2px;}
+.res-form-dl{margin-left:auto; font-size:16px; color:var(--ink4); flex-shrink:0;}
+
+.contact-card{display:flex; align-items:center; gap:14px; background:var(--white); border:1.5px solid var(--ln); border-radius:16px; padding:16px 18px; text-decoration:none; color:var(--ink); transition:border-color .15s, transform .15s, box-shadow .15s; box-shadow:0 1px 2px rgba(6,28,20,.03);}
+.contact-card:hover{border-color:var(--pb); transform:translateX(3px); box-shadow:0 8px 20px rgba(6,28,20,.06);}
+.cc-ico{width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; color:#fff;}
+.contact-card.line .cc-ico{background:#06C755;}
+.contact-card.tel .cc-ico{background:var(--p);}
+.contact-card.fb .cc-ico{background:#1877F2;}
+.cc-title{font-weight:700; font-size:14.5px;}
+.cc-sub{font-size:12px; color:var(--ink3); margin-top:2px;}
+.cc-arrow{margin-left:auto; font-size:22px; color:var(--ink4); flex-shrink:0;}
+
+/* ── FLOATING LINE BUTTON ── */
+.float-line{position:fixed; right:20px; bottom:20px; width:52px; height:52px; border-radius:50%; background:#06C755; color:#fff; display:flex; align-items:center; justify-content:center; font-size:24px; text-decoration:none; box-shadow:0 8px 20px rgba(6,199,85,.4); z-index:60; transition:transform .2s;}
+.float-line:hover{transform:scale(1.08);}
+.float-line:active{transform:scale(.94);}
+@media(max-width:860px){.float-line{right:16px; bottom:16px; width:48px; height:48px; font-size:21px;}}
+
+/* ── TOAST ── */
+#toastWrap{position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:300; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;}
+.toast-item{background:var(--navy); color:#fff; font-size:13px; font-weight:600; padding:12px 20px; border-radius:99px; box-shadow:0 10px 28px rgba(6,28,20,.25); opacity:0; transform:translateY(-14px) scale(.95); transition:opacity .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1); max-width:88vw; text-align:center;}
+.toast-item.show{opacity:1; transform:translateY(0) scale(1);}
+
+.btt{position:fixed; bottom:24px; right:82px; z-index:55; width:44px; height:44px; border-radius:50%; background:var(--white); color:var(--p); border:1px solid var(--ln); cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(6,28,20,.1); opacity:0; pointer-events:none; transform:translateY(10px); transition:opacity .25s, transform .25s;}
+.btt.show{opacity:1; pointer-events:auto; transform:none;}
+@media(max-width:860px){.btt{right:74px; bottom:18px; width:40px; height:40px; font-size:14px;}}
+
+/* ── MODAL ── */
+.modal-bg{display:none; position:fixed; inset:0; background:rgba(4,14,10,.5); z-index:100; align-items:center; justify-content:center; padding:16px;}
+.modal-bg.show{display:flex;}
+.modal-box{background:var(--white); border-radius:18px; max-width:480px; width:100%; max-height:85vh; overflow-y:auto;}
+.modal-hd{padding:18px 20px; border-bottom:1px solid var(--ln); display:flex; justify-content:space-between; align-items:center;}
+.modal-hd h3{font-size:15px; font-weight:700;}
+.modal-x{background:var(--bg); border:none; width:30px; height:30px; border-radius:8px; font-size:14px;}
+.modal-body{padding:18px 20px;}
+.cl-row{display:flex; gap:9px; align-items:flex-start; margin-bottom:10px; font-size:13px; line-height:1.6;}
+.cl-set-hd{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:6px 12px; border-radius:99px; margin-bottom:10px;}
+.cl-set-hd.cls1{background:var(--pl); color:var(--p);}
+.cl-set-hd.cls2{background:#EFF6FF; color:#1E40AF;}
+.cl-note{background:var(--goldl); border:1px solid var(--goldb); border-radius:10px; padding:10px 12px; font-size:11.5px; color:#8A6B1E; margin-top:10px; line-height:1.7;}
+.cl-row input{margin-top:3px;}
+
+.loading-box{text-align:center; padding:60px 20px; color:var(--ink3); font-size:13.5px;}
+.status-inline{font-size:12.5px; margin-top:10px;}
+
+/* ── RESPONSIVE ── */
+
+/* tablet / small laptop: trim sidebar + content padding a bit */
+@media(max-width:1100px){
+  .sidebar{width:224px;}
+  .sb-brand-name{font-size:12.5px;}
+  .content{padding:22px 20px 50px;}
+}
+
+/* phones + narrow tablets: collapse sidebar into a drawer */
+@media(max-width:860px){
+  .sidebar{position:fixed; left:0; top:0; transform:translateX(-100%); width:264px;}
+  .sidebar.open{transform:translateX(0);}
+  .sb-close{display:flex;}
+  .hamburger{display:flex; animation:menuAttention 1.15s ease-in-out 4;}
+  .hamburger::before{animation:menuRing 1.15s ease-out 4;}
+  .content{padding:18px 16px 90px;}
+  .topbar{padding:12px 14px; flex-wrap:wrap; row-gap:8px;}
+  .tb-left{align-items:center;}
+  .topbar h1{font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:44vw;}
+  .topbar p{display:none;}
+  .tb-chip{font-size:10.5px; padding:5px 10px;}
+  .seal-wrap{width:100px; height:100px;}
+  .seal{width:100px; height:100px;}
+  .qa-grid{grid-template-columns:1fr 1fr;}
+  .delivery-grid{grid-template-columns:1fr;}
+}
+
+/* small phones: tighten countdown + grids further so nothing overflows */
+@media(max-width:420px){
+  .content{padding:14px 12px 44px;}
+  .cd-digits{gap:5px;}
+  .cd-num{font-size:18px;}
+  .cd-unit{padding:8px 2px;}
+  .cd-block{padding:13px 14px;}
+  .gate-hero .disp{font-size:21px;}
+  .qa-grid{grid-template-columns:1fr;}
+  .seal-card{padding:22px 16px;}
+  .verify-card{padding:20px 16px;}
+  .topbar h1{max-width:52vw; font-size:14px;}
+}
+
+/* very large / ultra-wide monitors: keep the boxed app from feeling too stretched */
+@media(min-width:1681px){
+  body{background:#E9F1EC;}
+  .app-shell{box-shadow:0 0 0 1px var(--ln), 0 24px 60px rgba(6,28,20,.06); min-height:auto; margin:24px auto;}
+  .sidebar{height:auto; min-height:calc(100vh - 48px);}
+}
+</style>
+<link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1Rakzb_GSmKT7p0i1-_wHlOnvY-N2M_cb">
+<meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+
+<div id="uaWarnBar" style="display:none; background:#B45309; color:#fff; padding:12px 16px; font-size:13px; text-align:center; line-height:1.7; position:sticky; top:0; z-index:200;">
+  ⚠️ กำลังเปิดผ่านแอป LINE/Facebook ซึ่งอาจโหลดหน้าเว็บไม่สมบูรณ์<br>
+  แตะปุ่ม <b>⋯</b> หรือ <b>Share</b> มุมขวาบน แล้วเลือก <b>"เปิดใน Safari"</b> หรือ <b>"Open in Browser"</b>
+</div>
+<noscript>
+  <div style="background:#B45309; color:#fff; padding:16px; text-align:center; font-size:14px; line-height:1.8;">
+    ⚠️ เบราว์เซอร์นี้ปิดการใช้งาน JavaScript ไม่สามารถแสดงเว็บได้<br>
+    กรุณาเปิดลิงก์นี้ผ่าน Safari หรือ Chrome แทนครับ
+  </div>
+</noscript>
+
+<script>
+(function(){
+  var ua = navigator.userAgent || '';
+  var isInApp = /Line\//i.test(ua) || /FBAN|FBAV/i.test(ua) || /Instagram/i.test(ua) || /MicroMessenger/i.test(ua);
+  if (isInApp) {
+    var bar = document.getElementById('uaWarnBar');
+    if (bar) bar.style.display = 'block';
+  }
+})();
+</script>
+
+<div class="app-shell">
+<div class="sb-overlay" id="sbOverlay" onclick="closeDrawer()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">PIM</div>
+    <div>
+      <div class="sb-brand-name">งานทุนการศึกษา กยศ.</div>
+      <div class="sb-brand-sub">Panyapiwat Institute</div>
+    </div>
+    <button class="sb-close" onclick="closeDrawer()">✕</button>
+  </div>
+
+  <div class="sb-student" id="sbStudent">
+    <div class="sb-student-label">รหัสนักศึกษา</div>
+    <div class="sb-student-id"><span id="sbStudentId">-</span><button class="sb-logout" onclick="doLogout()">ออก</button></div>
+  </div>
+
+  <nav class="sb-nav" id="sbNav"></nav>
+
+  <div class="sb-foot">
+    <div class="sb-foot-label">ติดต่อเจ้าหน้าที่</div>
+    <a class="sb-contact-btn" href="https://line.me/ti/p/~@094pqhue" target="_blank" rel="noopener"><span class="sb-contact-ico line">💬</span> LINE @094pqhue</a>
+    <a class="sb-contact-btn" href="tel:028551034"><span class="sb-contact-ico tel">📞</span> 02-855-1034 (พี่นุ้ย)</a>
+    <a class="sb-contact-btn" href="tel:028550217"><span class="sb-contact-ico tel">📞</span> 02-855-0217 (พี่เซฟ)</a>
+    <a class="sb-contact-btn" href="https://www.facebook.com/pimstudentloan" target="_blank" rel="noopener"><span class="sb-contact-ico fb">👍</span> Facebook เพจ</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="hamburger" onclick="openDrawer()" aria-label="เปิดเมนูหลัก" title="เปิดเมนู"><span class="hamburger-ico">☰</span><span class="hamburger-label">เมนู</span></button>
+      <div>
+        <h1 id="tbTitle">งานทุนการศึกษา กยศ. PIM</h1>
+        <p id="tbSub">ระบบส่งเอกสารและตรวจสอบสถานะออนไลน์</p>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-chip" id="tbChip">🕐 กำลังโหลด...</div>
+      <button class="dm-toggle" id="dmToggle" onclick="toggleDarkMode()" aria-label="สลับโหมดมืด/สว่าง">🌙</button>
+    </div>
+  </div>
+
+  <div class="content" id="content"></div>
+</main>
+</div>
+
+<div id="modalRoot"></div>
+
+<a class="float-line" href="https://line.me/ti/p/~@094pqhue" target="_blank" rel="noopener" aria-label="ติดต่อผ่าน LINE">💬</a>
+
+<div id="toastWrap"></div>
+
+<button class="btt" id="bttBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="กลับด้านบน">⬆️</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.1/JsBarcode.all.min.js"></script>
+<script>
+/* ═══════════ CONFIG ═══════════ */
+var CD_START = new Date('2026-06-22T00:00:00+07:00');
+var CD_END   = new Date('2026-07-30T23:59:59+07:00');
+var OLD_CORRECTION_END = new Date('2026-08-07T23:59:59+07:00');
+var CD_NEW_START = null, CD_NEW_END = null;
+
+var F = {NEW:'https://forms.gle/iZUCHdbRWvUEjTwy5', OLD:'https://forms.gle/eAEapq7BQg7ob1FB9',
+  EDIT_NEW:'https://forms.gle/umqzgKzePC9PWiPHA', EDIT_OLD:'https://forms.gle/HgKEPgAkGHXDFKUF7',
+  TRACKING:'https://forms.gle/LUwsWEc13JP95b9PA'};
+var RCP = {TEL:'02-855-1034'};
+
+try{
+  google.script.run.withSuccessHandler(function(cfg){
+    if(cfg && cfg.forms) F = Object.assign({}, F, cfg.forms);
+    if(cfg && cfg.recipient) RCP = Object.assign({}, RCP, cfg.recipient);
+  }).getClientConfig();
+}catch(e){}
+
+/* ═══════════ STATE ═══════════ */
+var app = { verified:false, res:null, sid:'', view:'home', delivery:null, confettiShownFor:null };
+
+/* ═══════════ SIDEBAR NAV ═══════════ */
+var NAV_ITEMS = [
+  {id:'home', ico:'🏠', label:'หน้าหลัก', always:true},
+  {id:'verify', ico:'🔍', label:'ตรวจสอบสถานะ', always:true},
+  {id:'submit', ico:'📤', label:'ส่งเอกสาร', always:true},
+  {id:'history', ico:'🧾', label:'ประวัติการส่ง', needsVerify:true},
+  {id:'guide', ico:'📖', label:'คู่มือขั้นตอน', always:true},
+  {id:'resources', ico:'📚', label:'ตัวอย่าง & แบบฟอร์ม', always:true},
+  {id:'faq', ico:'❓', label:'คำถามที่พบบ่อย', always:true},
+  {id:'contact', ico:'📞', label:'ติดต่อเรา', always:true}
+];
+
+function renderSidebar(){
+  var nav = document.getElementById('sbNav');
+  nav.innerHTML = NAV_ITEMS.map(function(item){
+    var disabled = item.needsVerify && !app.verified;
+    var isFail = item.id === 'history' && app.res && app.res.status === 'ไม่ผ่าน';
+    var badge = isFail ? '<span class="sb-nav-badge">1</span>' : '';
+    return '<button class="sb-nav-item' + (app.view === item.id ? ' active' : '') + '"' +
+      (disabled ? ' disabled' : ' onclick="go(\'' + item.id + '\')"') +
+      '><span class="sb-nav-ico">' + item.ico + '</span>' + item.label + badge + '</button>';
+  }).join('');
+
+  var sbStudent = document.getElementById('sbStudent');
+  if (app.verified) {
+    sbStudent.classList.add('show');
+    document.getElementById('sbStudentId').textContent = app.sid;
+  } else {
+    sbStudent.classList.remove('show');
+  }
+}
+
+function go(view){
+  if (view === 'history' && !app.verified) return;
+  app.view = view;
+  closeDrawer();
+  renderSidebar();
+  renderContent();
+}
+
+function openDrawer(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('sbOverlay').classList.add('show'); }
+function closeDrawer(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOverlay').classList.remove('show'); }
+
+function doLogout(){
+  app.verified = false; app.res = null; app.view = 'home';
+  renderSidebar(); renderContent();
+}
+
+/* ═══════════ TOPBAR ═══════════ */
+function updateTopbarChip(){
+  var now = new Date();
+  var chip = document.getElementById('tbChip');
+  if (now <= CD_END) {
+    var d = Math.ceil((CD_END - now) / 86400000);
+    chip.textContent = '🕐 รายเก่าปิดรับใน ' + d + ' วัน';
+  } else if (now <= OLD_CORRECTION_END) {
+    var d2 = Math.ceil((OLD_CORRECTION_END - now) / 86400000);
+    chip.textContent = '🔒 รับเฉพาะเอกสารแก้ไข อีก ' + d2 + ' วัน';
+  } else {
+    chip.textContent = '🔒 ปิดรับเอกสารรายเก่าแล้ว';
+  }
+}
+updateTopbarChip();
+setInterval(updateTopbarChip, 60000);
+
+/* ═══════════ DARK MODE ═══════════ */
+function toggleDarkMode(){
+  var isDark = document.body.classList.toggle('dark');
+  try { localStorage.setItem('pim_dark', isDark ? '1' : '0'); } catch(e){}
+  document.getElementById('dmToggle').textContent = isDark ? '☀️' : '🌙';
+}
+(function initDarkMode(){
+  var saved = null;
+  try { saved = localStorage.getItem('pim_dark'); } catch(e){}
+  if (saved === '1') {
+    document.body.classList.add('dark');
+    var btn = document.getElementById('dmToggle');
+    if (btn) btn.textContent = '☀️';
+  }
+})();
+
+/* ═══════════ RENDER CONTENT ROUTER ═══════════ */
+function renderContent(){
+  var el = document.getElementById('content');
+  var tbTitle = document.getElementById('tbTitle'), tbSub = document.getElementById('tbSub');
+
+  if (app.view === 'home') {
+    tbTitle.textContent = app.verified ? 'สวัสดีครับ 👋' : 'งานทุนการศึกษา กยศ. PIM';
+    tbSub.textContent = app.verified ? 'ภาพรวมสถานะเอกสารกู้ยืมของคุณ' : 'ระบบส่งเอกสารและตรวจสอบสถานะออนไลน์';
+    el.innerHTML = app.verified ? renderDashboard() : renderGateHome();
+    if (app.verified) wireDashboardEvents();
+    if (!app.verified) updateCountdownTick();
+  } else if (app.view === 'verify') {
+    tbTitle.textContent = 'ตรวจสอบสถานะ'; tbSub.textContent = 'กรอกรหัสนักศึกษาและเบอร์โทร 5 หลักท้าย';
+    el.innerHTML = renderVerify();
+    setTimeout(function(){
+      var f = document.getElementById('vId');
+      if (f && !f.value) f.focus();
+      else { var p = document.getElementById('vPhone'); if (p) p.focus(); }
+    }, 350);
+  } else if (app.view === 'submit') {
+    tbTitle.textContent = 'ส่งเอกสาร'; tbSub.textContent = 'เลือกประเภทผู้กู้ยืมของคุณ';
+    el.innerHTML = renderSubmit();
+  } else if (app.view === 'history') {
+    tbTitle.textContent = 'ประวัติการส่งเอกสาร'; tbSub.textContent = 'รายการทั้งหมดที่เคยส่งมา';
+    el.innerHTML = renderHistory();
+  } else if (app.view === 'guide') {
+    tbTitle.textContent = 'คู่มือขั้นตอน'; tbSub.textContent = 'เตรียมเอกสารให้ครบก่อนส่ง';
+    el.innerHTML = renderGuide();
+  } else if (app.view === 'resources') {
+    tbTitle.textContent = 'ตัวอย่าง & แบบฟอร์ม'; tbSub.textContent = 'ตัวอย่างเอกสาร แบบฟอร์มดาวน์โหลด และข่าวสารล่าสุด';
+    el.innerHTML = renderResources();
+  } else if (app.view === 'faq') {
+    tbTitle.textContent = 'คำถามที่พบบ่อย'; tbSub.textContent = 'คำตอบสำหรับคำถามยอดฮิต';
+    el.innerHTML = renderFaq();
+  } else if (app.view === 'contact') {
+    tbTitle.textContent = 'ติดต่อเรา'; tbSub.textContent = 'ช่องทางติดต่องานทุนการศึกษา กยศ. PIM';
+    el.innerHTML = renderContact();
+  }
+
+  el.classList.remove('view-enter');
+  void el.offsetWidth; // force reflow so the animation restarts every navigation
+  el.classList.add('view-enter');
+}
+
+/* ═══════════ VIEW: HOME (GATE) ═══════════ */
+function renderGateHome(){
+  var now = new Date();
+  var warnHtml = '';
+  if (now > CD_END && now <= OLD_CORRECTION_END) {
+    warnHtml = '<div class="gate-warn"><div class="gw-ico">🔒</div><div>' +
+      '<b>ผู้กู้รายเก่า: ระบบปิดรับเอกสารใหม่แล้ว</b><br>' +
+      'เฉพาะนักศึกษาที่ได้รับแจ้งให้แก้ไขเอกสาร หรือมีสถานะ "ไม่ผ่าน" สามารถกด "ตรวจสอบสถานะ" แล้วส่งเอกสารแก้ไขได้ถึงวันที่ 7 สิงหาคม 2569<br>' +
+      'สงสัยเพิ่มเติม กรุณาโทร 02-855-1034 / 02-855-0217 เท่านั้น</div></div>';
+  } else if (now > OLD_CORRECTION_END) {
+    warnHtml = '<div class="gate-warn"><div class="gw-ico">🔒</div><div>' +
+      '<b>ปิดรับเอกสารรายเก่าและเอกสารแก้ไขแล้ว</b><br>' +
+      'สงสัยเพิ่มเติม กรุณาโทร 02-855-1034 / 02-855-0217 เท่านั้น</div></div>';
+  }
+  return '' +
+  '<img class="hero-banner" src="https://lh3.googleusercontent.com/d/13t1XL5Ll7tP8qo4OxWqC-XHbD1miFqUM=w1600" alt="งานทุนการศึกษา กยศ. สถาบันการจัดการปัญญาภิวัฒน์" onerror="this.onerror=null;this.src=\'https://drive.google.com/thumbnail?id=13t1XL5Ll7tP8qo4OxWqC-XHbD1miFqUM&sz=w1600\';">' +
+  '<div class="gate-hero"><div class="hero-orb hero-orb-1"></div><div class="hero-orb hero-orb-2"></div><div class="hero-orb hero-orb-3"></div><div class="hero-eyebrow">🎓 เทอม 1 ปีการศึกษา 2569 · งานทุนการศึกษา กยศ. PIM</div><div class="disp">ส่งเอกสาร กยศ. PIM<br><span class="grad">ครบ จบ ในที่เดียว</span></div>' +
+  '<p>ส่งเอกสารออนไลน์ ตรวจสอบสถานะ และเตรียมส่งเอกสารฉบับจริง ทำได้ในหน้าเดียว</p></div>' +
+  warnHtml +
+  '<div class="cd-wrap" id="cdWrap">' +
+    '<div class="cd-block old" id="cdBlockOld">' +
+      '<div class="cd-block-hd">📗 ผู้กู้รายเก่า</div>' +
+      '<div class="cd-status" id="cdStatusOld">กำลังโหลด...</div>' +
+      '<div class="cd-digits" id="cdDigitsOld">' +
+        '<div class="cd-unit"><span class="cd-num" id="cdOldD">--</span><span class="cd-lbl">วัน</span></div>' +
+        '<div class="cd-unit"><span class="cd-num" id="cdOldH">--</span><span class="cd-lbl">ชม.</span></div>' +
+        '<div class="cd-unit"><span class="cd-num" id="cdOldM">--</span><span class="cd-lbl">นาที</span></div>' +
+        '<div class="cd-unit"><span class="cd-num" id="cdOldS">--</span><span class="cd-lbl">วิ.</span></div>' +
+      '</div><div class="cd-note" id="cdNoteOld"></div>' +
+    '</div>' +
+    '<div class="cd-block new" id="cdBlockNew">' +
+      '<div class="cd-block-hd">📘 ผู้กู้รายใหม่</div>' +
+      '<div class="cd-status upcoming">🕐 รอประกาศวันเปิดรับ</div>' +
+      '<div class="cd-note">กองทุน กยศ. ยังไม่กำหนดวันเปิดรับเอกสารรายใหม่</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="gate-grid">' +
+    '<div class="gate-card"><div class="gc-ico">📤</div><div class="gc-title">ส่งเอกสารครั้งแรก</div><div class="gc-sub">ยังไม่เคยส่ง / ต้องการส่งเอกสารใหม่</div><button onclick="go(\'submit\')">เริ่มส่งเอกสาร</button></div>' +
+    '<div class="gate-card old"><div class="gc-ico">🔍</div><div class="gc-title">ตรวจสอบสถานะ</div><div class="gc-sub">เคยส่งเอกสารแล้ว ต้องการดูผล</div><button onclick="go(\'verify\')">ตรวจสอบสถานะ</button></div>' +
+  '</div>';
+}
+
+function pad2(n){ return n < 10 ? '0' + n : String(n); }
+function updateCountdownTick(){
+  var statusEl = document.getElementById('cdStatusOld');
+  if (!statusEl) return; // ไม่ได้อยู่หน้าหลัก ไม่ต้องอัปเดต
+  var now = new Date(), diff, cls = 'active';
+  if (now < CD_START) {
+    diff = CD_START - now;
+    statusEl.textContent = '🕐 เปิดรับเอกสาร ใน';
+    document.getElementById('cdNoteOld').textContent = 'เริ่มส่งเอกสาร 22 มิถุนายน 2569';
+  } else if (now <= CD_END) {
+    diff = CD_END - now;
+    statusEl.textContent = '🕐 ปิดรับเอกสารใหม่ ใน';
+    document.getElementById('cdNoteOld').textContent = 'สิ้นสุดการส่งเอกสารใหม่ 30 กรกฎาคม 2569';
+    var daysLeft = Math.floor(diff / 86400000);
+    cls = daysLeft <= 3 ? 'danger' : 'active';
+  } else if (now <= OLD_CORRECTION_END) {
+    diff = OLD_CORRECTION_END - now;
+    statusEl.textContent = '🔒 รับเฉพาะเอกสารแก้ไข อีก';
+    document.getElementById('cdNoteOld').textContent = 'ส่งเอกสารแก้ไขได้ถึง 7 สิงหาคม 2569';
+    cls = 'danger';
+  } else {
+    document.getElementById('cdDigitsOld').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:6px 0; color:var(--ink3); font-size:13px;">🔒 ปิดรับเอกสารรายเก่าแล้ว</div>';
+    statusEl.textContent = '🔒 ปิดรับเอกสารแล้ว'; statusEl.className = 'cd-status danger';
+    document.getElementById('cdNoteOld').textContent = 'สอบถามโทร 02-855-1034 / 02-855-0217';
+    return;
+  }
+  statusEl.className = 'cd-status ' + cls;
+  var d = Math.floor(diff / 86400000);
+  var h = Math.floor((diff % 86400000) / 3600000);
+  var m = Math.floor((diff % 3600000) / 60000);
+  var s = Math.floor((diff % 60000) / 1000);
+  var elD = document.getElementById('cdOldD');
+  if (elD) {
+    setDigitTick('cdOldD', pad2(d));
+    setDigitTick('cdOldH', pad2(h));
+    setDigitTick('cdOldM', pad2(m));
+    setDigitTick('cdOldS', pad2(s));
+  }
+}
+function setDigitTick(id, val){
+  var el = document.getElementById(id);
+  if (!el || el.textContent === val) return;
+  el.textContent = val;
+  var unit = el.closest('.cd-unit');
+  if (unit) {
+    unit.classList.remove('tick');
+    void unit.offsetWidth;
+    unit.classList.add('tick');
+  }
+}
+setInterval(updateCountdownTick, 1000);
+updateCountdownTick();
+
+/* ═══════════ VIEW: VERIFY ═══════════ */
+function renderVerify(){
+  var savedId = '';
+  try { savedId = localStorage.getItem('pim_sid') || ''; } catch(e){}
+  return '' +
+  '<div class="verify-card">' +
+    '<div class="field"><label>🪪 รหัสนักศึกษา (10 หลัก)</label><input id="vId" type="text" maxlength="10" inputmode="numeric" value="' + savedId + '" placeholder="เช่น 6600000001" onkeypress="return /[0-9]/.test(event.key)" oninput="if(this.value.length===10)document.getElementById(\'vPhone\').focus()" onkeydown="if(event.key===\'Enter\')doVerify()"></div>' +
+    '<div class="field"><label>📱 เบอร์โทร 5 หลักท้าย</label><input id="vPhone" type="password" maxlength="5" inputmode="numeric" placeholder="เช่น 12345" onkeypress="return /[0-9]/.test(event.key)" onkeydown="if(event.key===\'Enter\')doVerify()"></div>' +
+    '<button class="btn-block" id="vBtn" onclick="doVerify()">🔍 ตรวจสอบสถานะ</button>' +
+    '<div class="err-msg" id="vErr"></div>' +
+  '</div>';
+}
+
+function doVerify(){
+  var id = document.getElementById('vId').value.trim();
+  var phone = document.getElementById('vPhone').value.trim();
+  var err = document.getElementById('vErr'), btn = document.getElementById('vBtn');
+  err.style.display = 'none';
+  if (!/^\d{10}$/.test(id)) { err.textContent = 'กรุณากรอกรหัสนักศึกษาให้ครบ 10 หลัก'; err.style.display = 'block'; return; }
+  if (!/^\d{5}$/.test(phone)) { err.textContent = 'กรุณากรอกเบอร์โทร 5 หลักท้ายให้ครบ'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> กำลังตรวจสอบ...';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled = false; btn.textContent = '🔍 ตรวจสอบสถานะ';
+      if (!res || !res.found) {
+        err.textContent = (res && res.message) || 'ไม่พบข้อมูล กรุณาตรวจสอบรหัสและเบอร์โทรอีกครั้ง';
+        err.style.display = 'block';
+        return;
+      }
+      app.verified = true; app.res = res; app.sid = id; app.delivery = null;
+      try { localStorage.setItem('pim_sid', id); } catch(e){}
+      app.view = 'home';
+      renderSidebar(); renderContent();
+    })
+    .withFailureHandler(function(e){
+      btn.disabled = false; btn.textContent = '🔍 ตรวจสอบสถานะ';
+      err.textContent = e.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่'; err.style.display = 'block';
+    })
+    .searchStudentLogic(id, phone);
+}
+
+/* ═══════════ VIEW: SUBMIT ═══════════ */
+function renderSubmit(){
+  var now = new Date();
+  var oldLocked = now > CD_END;
+  var newLocked = !CD_NEW_START || !CD_NEW_END || now < CD_NEW_START || now > CD_NEW_END;
+  return '' +
+  '<div class="doc-btn-grid">' +
+    '<div class="doc-btn-card"><div class="gc-ico">📘</div><div class="gc-title">ผู้กู้ยืมรายใหม่</div>' +
+      '<button ' + (newLocked ? 'disabled' : '') + ' onclick="openForm(\'new\')">' + (newLocked ? '🔒 ยังไม่เปิดรับ' : '📤 เปิดฟอร์ม') + '</button>' +
+      '<div class="lock-note">' + (newLocked ? 'รอประกาศวันเปิดรับจากกองทุน' : '') + '</div></div>' +
+    '<div class="doc-btn-card"><div class="gc-ico">📗</div><div class="gc-title">ผู้กู้ยืมรายเก่า</div>' +
+      '<button ' + (oldLocked ? 'disabled' : '') + ' onclick="openForm(\'old\')">' + (oldLocked ? '🔒 ปิดรับแล้ว' : '📤 เปิดฟอร์ม') + '</button>' +
+      '<div class="lock-note">' + (oldLocked ? 'ปิดรับเอกสารใหม่แล้ว — ผู้ที่ต้องแก้ไขให้ไปที่ "ตรวจสอบสถานะ"' : 'เปิดรับถึง 30 กรกฎาคม 2569') + '</div></div>' +
+  '</div>' +
+  '<p style="margin-top:18px; font-size:12.5px; color:var(--ink3);">💡 ก่อนส่งแนะนำให้อ่าน <a href="#" onclick="go(\'guide\');return false;" style="color:var(--p); font-weight:700;">คู่มือขั้นตอน</a> เพื่อเตรียมเอกสารให้ครบก่อนครับ</p>';
+}
+
+function openForm(type){
+  var now = new Date();
+  if (type === 'old' && now > CD_END) { toast('🔒 ปิดรับเอกสารรายเก่าแล้วครับ'); return; }
+  if (type === 'new' && (!CD_NEW_START || !CD_NEW_END || now < CD_NEW_START || now > CD_NEW_END)) { toast('🔒 ผู้กู้รายใหม่ยังไม่เปิดรับครับ'); return; }
+  window.open(type === 'new' ? F.NEW : F.OLD, '_blank', 'noopener');
+}
+
+function toggleExamplePreview(){
+  var wrap = document.getElementById('examplePreviewWrap');
+  var frame = document.getElementById('examplePreviewFrame');
+  var showing = wrap.style.display !== 'none';
+  if (showing) { wrap.style.display = 'none'; frame.src = ''; return; }
+  var fileId = guideType === 'new' ? '1jx8WiMkGoh8IvA2SrLhhc-IiMIF9LIh7' : '1AuJkBFgHUwWkWCpNVkD9Ba48qUyO8mKT';
+  frame.src = 'https://drive.google.com/file/d/' + fileId + '/preview';
+  wrap.style.display = 'block';
+}
+
+function confirmBeforeForm(type){
+  var items = type === 'new' ? [
+    'สัญญากู้ยืมเงิน (7 หน้า) + สำเนาบัตรประชาชน — รวมเป็น PDF เดียว',
+    'แบบยืนยันการเบิกเงินกู้ยืม — แยกไฟล์ต่างหาก',
+    'ตั้งชื่อไฟล์เป็นเลขบัตรประชาชน 13 หลัก',
+    'สแกนชัดเจน ไม่มีนิ้วมือ/เงา/สิ่งของอื่นติดมา'
+  ] : [
+    'แบบยืนยันการเบิกเงินกู้ยืม + สำเนาบัตรประชาชน — รวมเป็น PDF เดียว',
+    'ตั้งชื่อไฟล์เป็นเลขบัตรประชาชน 13 หลัก',
+    'สแกนชัดเจน ไม่มีนิ้วมือ/เงา/สิ่งของอื่นติดมา'
+  ];
+  var html = '<div class="modal-bg show" onclick="if(event.target===this)closeModal()"><div class="modal-box">' +
+    '<div class="modal-hd"><h3>✅ เตรียมไฟล์ครบหรือยัง?</h3><button class="modal-x" onclick="closeModal()">✕</button></div>' +
+    '<div class="modal-body">' +
+      '<p style="font-size:12.5px; color:var(--ink3); margin-bottom:12px;">เช็คอีกรอบก่อนไปหน้าฟอร์มจริงครับ กันต้องย้อนมาแก้ทีหลัง</p>' +
+      items.map(function(t){ return '<label class="cl-row"><input type="checkbox">' + esc(t) + '</label>'; }).join('') +
+      '<button class="btn btn-dark" style="width:100%; margin-top:14px;" onclick="closeModal(); openForm(\'' + type + '\');">📤 พร้อมแล้ว ไปฟอร์มเลย</button>' +
+      '<button class="btn btn-ghost" style="width:100%; margin-top:8px;" onclick="closeModal();">⬅️ ย้อนกลับไปเตรียมเอกสารก่อน</button>' +
+    '</div></div></div>';
+  document.getElementById('modalRoot').innerHTML = html;
+}
+
+function printChecklist(type){
+  var items = type === 'new' ? [
+    {req:1, name:'สัญญากู้ยืมเงิน (7 หน้า)'}, {req:1, name:'สำเนาบัตรประชาชนผู้กู้'},
+    {req:0, name:'สำเนาบัตรประชาชนผู้แทนฯ (ถ้ามี — อายุต่ำกว่า 20 ปี)'}, {req:1, name:'แบบยืนยันการเบิกเงินกู้ยืม'}
+  ] : [
+    {req:1, name:'แบบยืนยันการเบิกเงินกู้ยืม'}, {req:1, name:'สำเนาบัตรประชาชนผู้กู้'},
+    {req:0, name:'สำเนาบัตรประชาชนผู้แทนฯ (ถ้ามี — อายุต่ำกว่า 20 ปี)'}
+  ];
+  var fileGroupTxt = type === 'new'
+    ? '<p><b>ไฟล์ที่ 1</b> (รวม PDF เดียว): สัญญา 7 หน้า + สำเนาบัตรประชาชนผู้กู้ (+ บัตรผู้แทนฯ ถ้ามี)</p><p><b>ไฟล์ที่ 2</b> (แยกไฟล์): แบบยืนยันการเบิกเงินกู้ยืม</p>'
+    : '<p><b>ไฟล์ที่ 1</b> (รวม PDF เดียว): แบบยืนยันการเบิกเงินกู้ยืม + สำเนาบัตรประชาชนผู้กู้ (+ บัตรผู้แทนฯ ถ้ามี)</p>';
+  var win = window.open('', '_blank', 'width=650,height=800');
+  if (!win) { toast('⚠️ กรุณาอนุญาต Popup'); return; }
+  win.document.write('<html><head><meta charset="UTF-8"><title>เช็คลิสต์เอกสาร กยศ. PIM</title>' +
+    '<style>body{font-family:sans-serif;padding:30px;color:#0A1810;}h2{color:#0A5C3E;margin-bottom:4px;}' +
+    '.sub{color:#666;font-size:13px;margin-bottom:20px;}.box{border:1.5px solid #ddd;border-radius:10px;padding:14px 16px;margin-bottom:10px;}' +
+    '.chk{width:16px;height:16px;border:2px solid #0A5C3E;border-radius:4px;display:inline-block;margin-right:10px;vertical-align:middle;}' +
+    'h3{font-size:14px;color:#0A5C3E;margin-top:24px;}code{background:#0A1810;color:#BB9A45;padding:3px 8px;border-radius:5px;}</style></head><body>' +
+    '<h2>📋 เช็คลิสต์เอกสาร กยศ. PIM</h2><div class="sub">สำหรับ' + (type === 'new' ? 'ผู้กู้ยืมรายใหม่' : 'ผู้กู้ยืมรายเก่า') + ' — พิมพ์วันที่ ' + new Date().toLocaleDateString('th-TH') + '</div>' +
+    '<h3>1. รายการเอกสารที่ต้องเตรียม</h3>' +
+    items.map(function(it){ return '<div class="box"><span class="chk"></span>' + esc(it.name) + '</div>'; }).join('') +
+    '<h3>2. วิธีจัดเรียงไฟล์</h3>' + fileGroupTxt +
+    '<h3>3. ตั้งชื่อไฟล์</h3><p>เลขบัตรประชาชน 13 หลัก เช่น <code>1101234567890.pdf</code></p>' +
+    '<script>setTimeout(function(){window.print();},400);<' + '/script></body></html>');
+  win.document.close();
+}
+
+/* ═══════════ DASHBOARD (verified home) ═══════════ */
+function renderDashboard(){
+  var r = app.res;
+  var status = r.status || '';
+  var typeText = r.typeText || (r.type === 'new' ? 'ผู้กู้ยืมรายใหม่' : 'ผู้กู้ยืมรายเก่า');
+  var html = '';
+
+  if (status === 'ผ่าน') {
+    html += '<div class="seal-card"><div class="seal-wrap"><div class="seal"><div class="seal-ico">✓</div><div class="seal-txt">ผ่านแล้ว</div></div></div>' +
+      '<div class="seal-info"><div class="seal-eyebrow">📋 ผลตรวจเอกสารออนไลน์</div>' +
+      '<div class="seal-title">เอกสารผ่านการตรวจสอบแล้ว!</div>' +
+      '<div class="seal-desc">ยินดีด้วยครับ ' + esc(r.name) + ' — ขั้นตอนต่อไปคือเตรียมเอกสารฉบับจริง (' + esc(typeText) + ') จำนวน 2 ชุด แล้วเลือกช่องทางส่งด้านล่างนี้</div>' +
+      '<button class="seal-cta" onclick="scrollToId(\'deliverySec\')">📦 ดูช่องทางส่งเอกสารฉบับจริง</button></div></div>';
+
+    html += renderBarcodeBox(r);
+    html += renderDeliverySection(r);
+
+  } else if (status === 'ไม่ผ่าน') {
+    html += '<div class="seal-card fail"><div class="seal-wrap"><div class="seal"><div class="seal-ico">✕</div><div class="seal-txt">ไม่ผ่าน</div></div></div>' +
+      '<div class="seal-info"><div class="seal-eyebrow">📋 ผลตรวจเอกสารออนไลน์</div>' +
+      '<div class="seal-title">เอกสารต้องแก้ไขก่อนส่งต่อ</div>' +
+      '<div class="seal-desc">' + esc((r.note || '') + (r.errorDoc ? '\nเอกสารที่ต้องแก้ไข: ' + r.errorDoc : '')) + '</div>' +
+      '<button class="seal-cta" onclick="resubmit()">📤 ส่งเอกสารแก้ไข</button></div></div>';
+
+    // ★ DEBUG ชั่วคราว — ลบบล็อกนี้ทิ้งได้หลังแก้บั๊กเสร็จ (ไม่กระทบการทำงานถ้าลืมทิ้งไว้)
+    html += '<div style="background:#1a1a1a; color:#7FD87F; font-family:monospace; font-size:11px; padding:12px 14px; border-radius:10px; margin-bottom:16px; white-space:pre-wrap; word-break:break-all;">DEBUG imageLink=[' + esc(r.imageLink || '') + ']\nDEBUG imageFileId=[' + esc(r.imageFileId || '') + ']\nDEBUG imagePins=' + esc(JSON.stringify(r.imagePins || [])) + '</div>';
+
+    if (r.imageLink || r.imageFileId) {
+      html += '<div class="doc-image-box"><div class="doc-image-hd">🖼️ ภาพจุดที่ต้องแก้ไข (เจ้าหน้าที่มาร์คไว้ให้)</div>' +
+        '<div class="doc-image-frame">' + (r.imageFileId ? driveImgTag(r.imageFileId, 1200, '', 'จุดที่ต้องแก้ไข') : '<img src="' + esc(r.imageLink) + '" alt="จุดที่ต้องแก้ไข">') +
+        '<div id="pinWrap"></div></div></div>';
+    }
+
+    html += '<div class="card fail-steps"><div class="sec-label" style="margin-top:0;">✅ ขั้นตอนการแก้ไขและส่งใหม่</div>' +
+      '<div class="warn-note" style="margin-bottom:14px;">⚠️ <b>สำคัญ:</b> ต้องแนบเอกสาร<b>ทั้งชุดใหม่ทั้งหมด</b> ไม่ใช่แนบแค่ไฟล์ที่แก้ไขไฟล์เดียว — รวมเอกสารส่วนที่ผ่านแล้วเข้าไปด้วยทุกครั้ง</div>' +
+      '<div class="fix-step"><div class="fix-sn">1</div><div class="fix-txt">อ่านหมายเหตุข้างต้น แล้วแก้ไขเอกสารตามที่เจ้าหน้าที่ระบุ</div></div>' +
+      '<div class="fix-step"><div class="fix-sn">2</div><div class="fix-txt">สแกนเอกสาร<b>ทั้งชุดใหม่</b>ให้เป็น <b>ไฟล์ PDF</b> ชัดเจน ครบ 4 ด้าน (รวมส่วนที่ไม่ต้องแก้ไขด้วย ไม่ใช่แค่หน้าที่แก้)</div></div>' +
+      '<div class="fix-step"><div class="fix-sn">3</div><div class="fix-txt">ตั้งชื่อไฟล์เป็นเลขบัตรประชาชน 13 หลัก เช่น <code>1101234567890.pdf</code></div></div>' +
+      '<div class="fix-step"><div class="fix-sn">4</div><div class="fix-txt">กดปุ่มด้านล่างเพื่อส่งเอกสารแก้ไขกลับมาตรวจ</div></div>' +
+      '<button class="btn btn-dark" style="margin-top:6px; width:100%;" onclick="resubmit()">📤 ส่งเอกสารแก้ไข</button>' +
+      (app.res.type === 'old' ? '<p style="font-size:11.5px; color:var(--ink4); margin-top:10px; text-align:center;">* ผู้กู้รายเก่าส่งเอกสารแก้ไขได้ถึง 7 สิงหาคม 2569</p>' : '') +
+    '</div>';
+
+  } else {
+    var isResubmit = status.indexOf('ส่งเอกสารแก้ไขแล้ว') !== -1;
+    html += '<div class="seal-card pending"><div class="seal-wrap"><div class="seal"><div class="seal-ico">⏳</div><div class="seal-txt">รอตรวจ</div></div></div>' +
+      '<div class="seal-info"><div class="seal-eyebrow">📋 ผลตรวจเอกสารออนไลน์</div>' +
+      '<div class="seal-title">' + (isResubmit ? 'ได้รับเอกสารฉบับแก้ไขแล้ว' : 'อยู่ระหว่างการตรวจสอบ') + '</div>' +
+      '<div class="seal-desc">' + (isResubmit ? 'เจ้าหน้าที่ได้รับเอกสารฉบับแก้ไขของคุณแล้ว กำลังตรวจสอบอีกครั้ง' : 'เจ้าหน้าที่กำลังดำเนินการ กรุณารอ 7-10 วันทำการ') + ' แล้วกลับมาตรวจสอบสถานะอีกครั้งครับ</div></div></div>';
+  }
+
+  html += '<div class="sec-label">⚡ ทางลัด</div><div class="qa-grid">' +
+    '<button class="qa-card" onclick="go(\'guide\')"><div class="qa-ico">📖</div><div class="qa-title">คู่มือเตรียมเอกสาร</div><div class="qa-sub">ดูขั้นตอนแบบละเอียด</div></button>' +
+    '<button class="qa-card" onclick="go(\'history\')"><div class="qa-ico">🧾</div><div class="qa-title">ประวัติการส่ง</div><div class="qa-sub">ดูทุกครั้งที่เคยส่งมา</div></button>' +
+    '<button class="qa-card" onclick="go(\'contact\')"><div class="qa-ico">📞</div><div class="qa-title">ติดต่อเจ้าหน้าที่</div><div class="qa-sub">LINE / โทร / Facebook</div></button>' +
+  '</div>';
+
+  return html;
+}
+
+function renderBarcodeBox(r){
+  return '<div class="barcode-box"><div style="font-weight:700; font-size:13px; margin-bottom:10px;">📊 บาร์โค้ดรหัสนักศึกษา</div>' +
+    '<svg id="statusBarcode"></svg>' +
+    '<button class="btn btn-dark" style="margin-top:14px;" onclick="printProofSlip()">🖨️ พิมพ์ใบยืนยันผล (แนบไปกับเอกสาร)</button></div>';
+}
+
+function renderDeliverySection(r){
+  return '<div class="card" id="deliverySec" style="margin-bottom:22px;">' +
+    '<div class="sec-label" style="margin-top:0;">📦 เลือกช่องทางส่งเอกสารฉบับจริง</div>' +
+    '<div class="delivery-grid">' +
+      '<div class="delivery-card" onclick="selectDelivery(1,this)"><div class="dc-ico">🏢</div><div class="dc-title">1. ส่งด้วยตนเอง</div><div class="dc-desc">ห้อง 4-0809 ชั้น 8 อาคาร CP ALL Academy</div></div>' +
+      '<div class="delivery-card" onclick="selectDelivery(2,this)"><div class="dc-ico">📮</div><div class="dc-title">2. ส่ง EMS</div><div class="dc-desc">พิมพ์ใบจ่าหน้าซองอัตโนมัติ</div></div>' +
+      '<div class="delivery-card" onclick="selectDelivery(3,this)"><div class="dc-ico">🎓</div><div class="dc-title">3. ศูนย์การเรียนทางไกล</div><div class="dc-desc">ส่งกับอาจารย์ประจำศูนย์</div></div>' +
+    '</div>' +
+    '<div class="ems-box" id="emsBox"><label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">📍 ที่อยู่ผู้ส่ง (สำหรับใบจ่าหน้าซอง)</label>' +
+      '<textarea id="senderAddr" placeholder="เช่น 25/3 หมู่บ้านสุขใจ ถ.สุขุมวิท แขวงบางนา เขตบางนา กรุงเทพฯ 10260"></textarea>' +
+      '<div class="btn-row"><button class="btn btn-dark" onclick="printEnv()">🖨️ พิมพ์ใบจ่าหน้าซอง EMS</button>' +
+      '<button class="btn btn-ghost" onclick="openChecklist()">✅ เช็กลิสต์เอกสาร</button>' +
+      '<button class="btn btn-ghost" onclick="window.open(F.TRACKING,\'_blank\',\'noopener\')">📨 แจ้งเลขพัสดุ</button></div></div>' +
+    '<div class="btn-row" id="nonEmsRow" style="display:none;"><button class="btn btn-ghost" onclick="openChecklist()">✅ เช็กลิสต์เอกสารฉบับจริง</button></div>' +
+  '</div>';
+}
+
+function selectDelivery(n, el){
+  document.querySelectorAll('.delivery-card').forEach(function(c){ c.classList.remove('selected'); });
+  el.classList.add('selected');
+  var ems = document.getElementById('emsBox'), nonEms = document.getElementById('nonEmsRow');
+  if (n === 2) { ems.classList.add('show'); nonEms.style.display = 'none'; }
+  else { ems.classList.remove('show'); nonEms.style.display = 'flex'; }
+}
+
+function wireDashboardEvents(){
+  var r = app.res;
+  if (r.status === 'ผ่าน' && typeof JsBarcode !== 'undefined' && document.getElementById('statusBarcode')) {
+    try { JsBarcode('#statusBarcode', app.sid, {format:'CODE128', lineColor:'#0C1A14', width:2.2, height:56, fontSize:14, margin:6}); } catch(e){}
+  }
+  if (r.status === 'ผ่าน' && app.confettiShownFor !== app.sid) {
+    app.confettiShownFor = app.sid;
+    launchConfetti();
+  }
+  if (r.status === 'ไม่ผ่าน' && r.imagePins && r.imagePins.length) {
+    var wrap = document.getElementById('pinWrap');
+    if (wrap) wrap.innerHTML = r.imagePins.map(function(p,i){
+      return '<div class="doc-pin" style="left:' + p.x + '%; top:' + p.y + '%;" title="' + esc(p.note || '') + '">' + (i+1) + '</div>';
+    }).join('');
+  }
+}
+
+function resubmit(){
+  var type = app.res && app.res.type;
+  if (type === 'old' && new Date() > OLD_CORRECTION_END) { toast('🔒 ปิดรับเอกสารแก้ไขแล้วครับ'); return; }
+  window.open(type === 'new' ? F.EDIT_NEW : F.EDIT_OLD, '_blank', 'noopener');
+}
+
+/* ═══════════ VIEW: HISTORY ═══════════ */
+function renderHistory(){
+  var tl = (app.res && app.res.timeline) || [];
+  if (!tl.length) return '<div class="card"><p style="color:var(--ink3); font-size:13px;">ยังไม่มีประวัติการส่งเอกสารครับ</p></div>';
+  return '<div class="card">' + tl.map(function(e){
+    var cls = e.status === 'ผ่าน' ? '' : (e.status === 'ไม่ผ่าน' ? 'fail' : '');
+    var ico = e.status === 'ผ่าน' ? '✅' : (e.status === 'ไม่ผ่าน' ? '❌' : '⏳');
+    return '<div class="tl-item ' + cls + '"><div class="tl-dot">' + ico + '</div><div class="tl-body">' +
+      '<div class="tl-top"><span class="tl-label">' + esc(e.label) + '</span><span class="tl-time">' + esc(e.timestampText || '-') + '</span></div>' +
+      '<div class="tl-note">สถานะ: ' + esc(e.status || '-') + (e.note ? ' — ' + esc(e.note) : '') + '</div></div></div>';
+  }).join('') + '</div>';
+}
+
+/* ═══════════ VIEW: GUIDE ═══════════ */
+var guideType = 'new';
+function renderGuide(){
+  return '<div class="gtab-row">' +
+    '<button class="gtab' + (guideType === 'new' ? ' active' : '') + '" onclick="switchGuide(\'new\')">📘 ผู้กู้รายใหม่</button>' +
+    '<button class="gtab' + (guideType === 'old' ? ' active' : '') + '" onclick="switchGuide(\'old\')">📗 ผู้กู้รายเก่า</button>' +
+  '</div><div id="guideBody"></div>' + renderGuideBody();
+}
+function switchGuide(t){ guideType = t; document.getElementById('content').innerHTML = renderGuide(); }
+function renderGuideBody(){
+  var items = guideType === 'new' ? [
+    {req:1, name:'สัญญากู้ยืมเงิน (7 หน้า)', hint:'พิมพ์จากระบบ กยศ. กรอกวันที่ทำสัญญาให้ครบ'},
+    {req:1, name:'สำเนาบัตรประชาชนผู้กู้', hint:'เซ็น "สำเนาถูกต้อง" ตรวจวันหมดอายุบัตร'},
+    {req:0, name:'สำเนาบัตรประชาชนผู้แทนฯ', hint:'เฉพาะกรณีอายุต่ำกว่า 20 ปี'},
+    {req:1, name:'แบบยืนยันการเบิกเงินกู้ยืม', hint:'กรอกวันออกบัตร/หมดอายุบัตรให้ครบ'}
+  ] : [
+    {req:1, name:'แบบยืนยันการเบิกเงินกู้ยืม', hint:'พิมพ์สีหรือขาวดำก็ได้'},
+    {req:1, name:'สำเนาบัตรประชาชนผู้กู้', hint:'เซ็น "สำเนาถูกต้อง" ตรวจวันหมดอายุบัตร'},
+    {req:0, name:'สำเนาบัตรประชาชนผู้แทนฯ', hint:'เฉพาะกรณีอายุต่ำกว่า 20 ปี'}
+  ];
+  var exampleDocFileId = guideType === 'new' ? '1jx8WiMkGoh8IvA2SrLhhc-IiMIF9LIh7' : '1AuJkBFgHUwWkWCpNVkD9Ba48qUyO8mKT';
+  var exampleDocUrl = 'https://drive.google.com/file/d/' + exampleDocFileId + '/view';
+  var exampleDocLabel = guideType === 'new' ? 'ตัวอย่างการเซ็นสัญญาและแบบเบิกเงินกู้ยืม (ไฟล์รวมหน้าจริง)' : 'ตัวอย่างการเซ็นแบบเบิกเงินกู้ยืม (ไฟล์รวมหน้าจริง)';
+
+  var fileGroups = guideType === 'new' ? [
+    { label: '📁 ไฟล์ที่ 1 — รวมเป็น PDF เดียว เรียงหน้าตามลำดับนี้', items: [
+      {ico:'📄', name:'สัญญา 7 หน้า'}, {ico:'🪪', name:'บัตรประชาชนผู้กู้'}, {ico:'🪪', name:'บัตรผู้แทนฯ', opt:true}
+    ]},
+    { label: '📁 ไฟล์ที่ 2 — แยกไฟล์ต่างหาก', items: [
+      {ico:'💰', name:'แบบเบิกเงิน'}
+    ]}
+  ] : [
+    { label: '📁 ไฟล์ที่ 1 — รวมเป็น PDF เดียว เรียงหน้าตามลำดับนี้', items: [
+      {ico:'💰', name:'แบบเบิกเงิน'}, {ico:'🪪', name:'บัตรประชาชนผู้กู้'}, {ico:'🪪', name:'บัตรผู้แทนฯ', opt:true}
+    ]}
+  ];
+  var fileGroupsHtml = '<div class="sec-label" style="margin-top:0;">📎 วิธีจัดเรียงไฟล์ก่อนอัปโหลด</div>' +
+    fileGroups.map(function(g){
+      return '<div class="filegroup-box"><div class="filegroup-label">' + g.label + '</div><div class="filegroup-chips">' +
+        g.items.map(function(it, i){
+          var chip = '<div class="fg-chip' + (it.opt ? ' optional' : '') + '"><span class="fg-ico">' + it.ico + '</span><span class="fg-name">' + esc(it.name) + (it.opt ? '<br><span style="color:var(--ink4); font-weight:600;">(ถ้ามี)</span>' : '') + '</span></div>';
+          return (i > 0 ? '<span class="fg-arrow">+</span>' : '') + chip;
+        }).join('') +
+      '</div></div>';
+    }).join('') +
+    '<p style="font-size:11.5px; color:var(--ink4); margin-top:2px;">🪪 บัตรผู้แทนฯ ใส่เฉพาะกรณีอายุต่ำกว่า 20 ปี — ถ้าไม่มีข้ามได้เลย</p>';
+
+  var prep = getPrepState(guideType);
+  var doneCount = items.reduce(function(n, it, i){ return n + (prep[i] ? 1 : 0); }, 0);
+  var pct = Math.round(doneCount / items.length * 100);
+
+  var html =
+  '<div class="card" style="margin-top:0;">' +
+    '<div class="sec-label" style="margin-top:0;">1️⃣ เตรียมเอกสาร</div>' +
+    '<div class="prep-progress"><div class="prep-bar-bg"><div class="prep-bar-fill" style="width:' + pct + '%;"></div></div><div class="prep-progress-txt">เตรียมแล้ว ' + doneCount + '/' + items.length + '</div></div>' +
+    items.map(function(it, i){
+      return '<label class="doc-item ' + (it.req ? 'req' : 'opt') + ' prep-checkable"><input type="checkbox" class="prep-checkbox" ' + (prep[i] ? 'checked' : '') + ' onchange="togglePrepItem(\'' + guideType + '\',' + i + ')"><div>' +
+        '<div class="di-name">' + (it.req ? '' : '⭐ ') + esc(it.name) + '</div><div class="di-hint">' + esc(it.hint) + '</div></div></label>';
+    }).join('') +
+    '<div class="btn-row" style="margin-top:8px;">' +
+      '<a href="' + exampleDocUrl + '" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none;">↗ เปิดตัวอย่างแท็บใหม่</a>' +
+      '<button class="btn btn-ghost" onclick="toggleExamplePreview()">👁️ ' + exampleDocLabel + '</button>' +
+    '</div>' +
+    '<div id="examplePreviewWrap" style="display:none; margin-top:12px;"><iframe id="examplePreviewFrame" class="example-preview-frame" src="" loading="lazy"></iframe></div>' +
+  '</div>' +
+
+  '<div class="card" style="margin-top:16px;">' + fileGroupsHtml + '</div>' +
+
+  '<div class="card" style="margin-top:16px;">' +
+    '<div class="sec-label" style="margin-top:0;">2️⃣ สแกนเป็น PDF</div>' +
+    '<div class="video-row">' +
+      '<a class="video-link" href="https://www.youtube.com/shorts/Bb-KUTc6pE0" target="_blank" rel="noopener">🍎 วิธีสแกน iOS</a>' +
+      '<a class="video-link" href="https://www.youtube.com/shorts/YRIQxTzoMqo" target="_blank" rel="noopener">🤖 วิธีสแกน Android</a>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="card" style="margin-top:16px;">' +
+    '<div class="sec-label" style="margin-top:0;">3️⃣ ตั้งชื่อไฟล์ให้ถูกต้อง</div>' +
+    '<div class="filename-box">' +
+      '<div class="fn-label">รูปแบบชื่อไฟล์</div>' +
+      '<code class="fn-code">เลขบัตรประชาชน 13 หลัก.pdf</code>' +
+      '<div class="fn-label" style="margin-top:10px;">ตัวอย่าง</div>' +
+      '<code class="fn-code fn-example">1101234567890.pdf</code>' +
+      '<p style="font-size:12px; color:var(--ink3); margin-top:10px; line-height:1.7;">ใช้ชื่อไฟล์เดียวกันได้ทั้งไฟล์สัญญาและแบบเบิกเงิน เพราะอัปโหลดแยกช่องกันอยู่แล้วในฟอร์ม ไม่ต้องใส่ชื่อ-สกุลหรือประเภทเอกสาร</p>' +
+    '</div>' +
+    '<div class="warn-note">🔓 <b>ถ้าใช้ Google Drive:</b> ต้องเปิดสิทธิ์ก่อน — Drive → แชร์ → เปลี่ยนเป็น "ทุกคนที่มีลิงก์" → บันทึก</div>' +
+  '</div>' +
+
+  '<div class="btn-row" style="margin-top:16px;">' +
+    '<button class="btn btn-dark" style="flex:1;" onclick="confirmBeforeForm(\'' + guideType + '\')">📤 ไปส่งเอกสาร' + (guideType === 'new' ? 'รายใหม่' : 'รายเก่า') + '</button>' +
+    '<button class="btn btn-ghost" onclick="printChecklist(\'' + guideType + '\')">🖨️ พิมพ์เช็คลิสต์</button>' +
+  '</div>';
+
+  return html;
+}
+
+/* ═══════════ VIEW: FAQ ═══════════ */
+var FAQ_ITEMS = [
+  {q:'ส่งเอกสารออนไลน์แล้ว ต้องทำอะไรต่อ?', a:'รอ 7-10 วันทำการ แล้วกลับมาตรวจสอบสถานะในเมนู "ตรวจสอบสถานะ" หากผ่านจะมีขั้นตอนส่งเอกสารฉบับจริงให้ดำเนินการต่อ'},
+  {q:'ไฟล์ Google Drive เปิดสิทธิ์ยังไง?', a:'เปิดไฟล์ใน Drive → กด "แชร์" → เปลี่ยนเป็น "ทุกคนที่มีลิงก์" → บันทึก'},
+  {q:'ตั้งชื่อไฟล์ผิดรูปแบบ ส่งได้ไหม?', a:'ส่งได้ แต่ควรตั้งชื่อเป็นเลขบัตรประชาชน 13 หลักเพื่อให้เจ้าหน้าที่แนบเข้าระบบได้เร็วขึ้น'},
+  {q:'ส่ง EMS แล้วต้องทำอะไรเพิ่ม?', a:'กลับมาที่เมนู "ตรวจสอบสถานะ" แล้วกดปุ่ม "แจ้งเลขพัสดุ" เพื่อให้เจ้าหน้าที่ติดตามพัสดุได้'},
+  {q:'กิจกรรมจิตอาสาของ SET ต้องใช้แบบฟอร์มไหม?', a:'ไม่ต้องใช้แบบฟอร์ม สำหรับกิจกรรมจิตอาสาของ SET ให้พิมพ์เกียรติบัตรแนบมาส่งได้เลย โดยรวมไว้ในชุดเอกสารที่ 2'},
+  {q:'ทำจิตอาสามาก่อนหน้านี้แล้ว ไม่แน่ใจว่าใช้ได้ไหม?', a:'เกณฑ์การรับรองจิตอาสาอาจเปลี่ยนแปลงในแต่ละปีการศึกษา เพื่อไม่ให้เสียเวลาไปทำกิจกรรมใหม่โดยไม่จำเป็น แนะนำให้ส่งรูปเอกสาร/หลักฐานจิตอาสาที่มีอยู่ไปสอบถามเจ้าหน้าที่ทาง LINE @094pqhue ก่อนวันปิดรับเอกสาร เพื่อยืนยันว่าใช้ได้หรือไม่'},
+  {q:'ส่งเอกสารแก้ไขไปแล้ว แต่ตรวจสถานะยังขึ้นว่า "ไม่ผ่าน" เหมือนเดิม?', a:'หลังส่งฉบับแก้ไข ระบบจะเปลี่ยนสถานะเป็น "ได้รับเอกสารฉบับแก้ไขแล้ว" ทันที ระหว่างรอเจ้าหน้าที่ตรวจซ้ำ 7-10 วันทำการ ถ้ายังเห็น "ไม่ผ่าน" แบบเดิมหลังผ่านไปหลายชั่วโมง ลองกดตรวจสอบสถานะใหม่อีกครั้ง (บางครั้งเบราว์เซอร์อาจแคชผลเก่าไว้) หากยังไม่เปลี่ยน ติดต่อเจ้าหน้าที่ผ่าน LINE พร้อมแจ้งรหัสนักศึกษาได้เลย'},
+  {q:'ตอนส่งเอกสารแก้ไข ต้องแนบแค่ไฟล์ที่แก้ไข หรือแนบทั้งชุดใหม่?', a:'ต้องแนบเอกสารทั้งชุดใหม่ทั้งหมดครับ ไม่ใช่แนบแค่ไฟล์ที่แก้ไขไฟล์เดียว — สแกนรวมเอกสารส่วนที่ผ่านแล้วเข้าไปด้วยทุกครั้ง เพื่อให้เจ้าหน้าที่ตรวจสอบชุดที่สมบูรณ์ได้ในคราวเดียว'}
+];
+function renderFaq(){
+  return FAQ_ITEMS.map(function(f, i){
+    return '<div class="faq-item"><div class="faq-q" onclick="toggleFaq(' + i + ')"><span>' + esc(f.q) + '</span><span>▾</span></div>' +
+      '<div class="faq-a" id="faqA' + i + '"><div class="faq-a-inner">' + esc(f.a) + '</div></div></div>';
+  }).join('');
+}
+function toggleFaq(i){
+  var el = document.getElementById('faqA' + i);
+  var open = el.style.maxHeight && el.style.maxHeight !== '0px';
+  document.querySelectorAll('.faq-a').forEach(function(a){ a.style.maxHeight = '0px'; });
+  if (!open) el.style.maxHeight = el.scrollHeight + 'px';
+}
+
+/* ═══════════ VIEW: CONTACT ═══════════ */
+/* ═══════════ VIEW: RESOURCES (ตัวอย่าง & แบบฟอร์ม) ═══════════
+   ⚠️ เนื้อหาด้านล่างเป็นตัวอย่างโครงร่างเท่านั้น — แก้ลิงก์/รูป/ข้อความให้เป็นของจริงก่อนใช้งาน
+   แก้ได้ตรงนี้จุดเดียว ไม่ต้องไปยุ่งกับ HTML ด้านล่าง */
+var RESOURCE_EXAMPLES = [
+  { title: 'ตัวอย่างการเซ็นสัญญา + แบบเบิกเงิน (รายใหม่)', fileId: '1jx8WiMkGoh8IvA2SrLhhc-IiMIF9LIh7', url: 'https://drive.google.com/file/d/1jx8WiMkGoh8IvA2SrLhhc-IiMIF9LIh7/view' },
+  { title: 'ตัวอย่างการเซ็นแบบเบิกเงิน (รายเก่า)', fileId: '1AuJkBFgHUwWkWCpNVkD9Ba48qUyO8mKT', url: 'https://drive.google.com/file/d/1AuJkBFgHUwWkWCpNVkD9Ba48qUyO8mKT/view' },
+  { title: 'ตัวอย่างการเขียนหนังสือให้ความยินยอมเปิดเผยข้อมูล', fileId: '1qv9ZLcUCvwndP3x0dTJkVjIT3R8JSIYI', url: 'https://drive.google.com/file/d/1qv9ZLcUCvwndP3x0dTJkVjIT3R8JSIYI/view' },
+  { title: 'ตัวอย่างการเขียนหนังสือรับรองรายได้ครอบครัว (กยศ.102)', fileId: '18uilI54tKwfNoWWx3JkZufS5xPihDnVo', url: 'https://drive.google.com/file/d/18uilI54tKwfNoWWx3JkZufS5xPihDnVo/view' }
+  // เพิ่มตัวอย่างอื่นได้โดย copy บรรทัดบนแล้วเปลี่ยน title / fileId / url (fileId คือรหัสไฟล์ Drive ระหว่าง /d/ กับ /view ในลิงก์)
+];
+
+var RESOURCE_FORMS = [
+  { title: 'คู่มือการกู้ยืม กยศ.', desc: 'คู่มือฉบับเต็มจากกองทุน กยศ.', url: 'https://www.studentloan.or.th/th/system/files/files/news/2.%E0%B8%84%E0%B8%B9%E0%B9%88%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%9C%E0%B8%B9%E0%B9%89%E0%B8%81%E0%B8%B9%E0%B9%89%E0%B8%A2%E0%B8%B7%E0%B8%A1%E0%B9%80%E0%B8%87%E0%B8%B4%E0%B8%99.pdf' },
+  { title: 'หนังสือให้ความยินยอมในการเปิดเผยข้อมูล', desc: 'เอกสารประกอบการกู้ยืม', url: 'https://www.studentloan.or.th/system/files/files/download/2569_0.pdf' },
+  { title: 'หนังสือรับรองรายได้ครอบครัว (กยศ.102)', desc: 'แบบฟอร์มรูปแบบใหม่ ปีการศึกษา 2569 เท่านั้น — สำหรับผู้ไม่มีรายได้ประจำ', url: 'https://www.studentloan.or.th/th/system/files/files/news/%E0%B8%81%E0%B8%A2%E0%B8%A8.102.pdf' },
+  { title: 'แบบฟอร์มจิตอาสา', desc: 'สำหรับผู้กู้รายเก่าที่ต้องแนบหลักฐานจิตอาสา', url: 'https://drive.google.com/file/d/1jW0_ybKgBacvzuscmWbLRdWNkQx87mma/view' },
+  { title: 'เว็บไซต์ระบบ DSL (ยื่นกู้ส่วนกลาง)', desc: 'ระบบกลางของกองทุน กยศ. — ใช้คู่กับระบบของสถาบัน', url: 'https://wsa.dsl.studentloan.or.th/#/rms/rms-login', ico: '🌐' }
+  // เพิ่มฟอร์มอื่นได้โดย copy บรรทัดบนแล้วเปลี่ยน title / desc / url
+];
+
+var RESOURCE_VIDEOS = [
+  { title: 'วิธีสมัครใช้งานระบบ DSL หรือ App กยศ. Connect', ytId: 'F9svpuyJL7o' },
+  { title: 'ตัวอย่างการยื่นกู้ในระบบ DSL หรือ App กยศ. Connect', ytId: 'of_ImH4OgqE' }
+  // เพิ่มคลิปอื่นได้โดย copy บรรทัดบนแล้วเปลี่ยน title / ytId (เอาแค่รหัสวิดีโอจากลิงก์ YouTube เช่น youtube.com/watch?v=XXXXX เอาแค่ XXXXX)
+];
+
+var resourceTab = 'examples';
+function renderResources(){
+  var tabs = [
+    { id: 'examples', label: '🖼️ ตัวอย่างเอกสาร' },
+    { id: 'forms', label: '📋 แบบฟอร์ม' },
+    { id: 'videos', label: '🎥 คลิปวิดีโอ' }
+  ];
+  var html = '<div class="gtab-row">' + tabs.map(function(t){
+    return '<button class="gtab' + (resourceTab === t.id ? ' active' : '') + '" onclick="switchResourceTab(\'' + t.id + '\')">' + t.label + '</button>';
+  }).join('') + '</div>';
+
+  if (resourceTab === 'examples') {
+    html += '<div class="res-gallery">' + RESOURCE_EXAMPLES.map(function(ex){
+      return '<a class="res-card" href="' + esc(ex.url) + '" target="_blank" rel="noopener">' +
+        '<div class="res-thumb-wrap">' + driveImgTag(ex.fileId, 500, 'res-thumb', ex.title) + '</div>' +
+        '<div class="res-card-title">' + esc(ex.title) + '</div>' +
+      '</a>';
+    }).join('') + '</div>';
+  } else if (resourceTab === 'forms') {
+    html += '<div class="card">' + RESOURCE_FORMS.map(function(f){
+      return '<a class="res-form-row" href="' + esc(f.url) + '" target="_blank" rel="noopener">' +
+        '<div class="res-form-ico">' + (f.ico || '📄') + '</div><div><div class="res-form-title">' + esc(f.title) + '</div><div class="res-form-desc">' + esc(f.desc) + '</div></div>' +
+        '<div class="res-form-dl">' + (f.ico ? '↗' : '⬇️') + '</div></a>';
+    }).join('') + '</div>';
+  } else if (resourceTab === 'videos') {
+    html += '<div class="res-gallery">' + RESOURCE_VIDEOS.map(function(v){
+      return '<a class="res-card" href="https://www.youtube.com/watch?v=' + esc(v.ytId) + '" target="_blank" rel="noopener">' +
+        '<div class="res-thumb-wrap res-video-thumb"><img class="res-thumb" src="https://img.youtube.com/vi/' + esc(v.ytId) + '/hqdefault.jpg" alt="' + esc(v.title) + '" loading="lazy"><div class="res-play-btn">▶</div></div>' +
+        '<div class="res-card-title">' + esc(v.title) + '</div>' +
+      '</a>';
+    }).join('') + '</div>';
+  }
+  return html;
+}
+function switchResourceTab(id){ resourceTab = id; document.getElementById('content').innerHTML = renderResources(); }
+
+function renderContact(){
+  return '<div class="contact-grid">' +
+    '<a class="contact-card line" href="https://line.me/ti/p/~@094pqhue" target="_blank" rel="noopener">' +
+      '<div class="cc-ico">💬</div><div><div class="cc-title">LINE Official</div><div class="cc-sub">@094pqhue — ตอบไวสุด แนะนำช่องทางนี้</div></div><div class="cc-arrow">›</div></a>' +
+    '<a class="contact-card tel" href="tel:028551034">' +
+      '<div class="cc-ico">📞</div><div><div class="cc-title">02-855-1034</div><div class="cc-sub">พี่นุ้ย — จันทร์-ศุกร์ 08:30-16:30 น.</div></div><div class="cc-arrow">›</div></a>' +
+    '<a class="contact-card tel" href="tel:028550217">' +
+      '<div class="cc-ico">📞</div><div><div class="cc-title">02-855-0217</div><div class="cc-sub">พี่เซฟ — จันทร์-ศุกร์ 08:30-16:30 น.</div></div><div class="cc-arrow">›</div></a>' +
+    '<a class="contact-card fb" href="https://www.facebook.com/pimstudentloan" target="_blank" rel="noopener">' +
+      '<div class="cc-ico">👍</div><div><div class="cc-title">Facebook เพจ กยศ.PIM</div><div class="cc-sub">ข่าวสารและประกาศล่าสุด</div></div><div class="cc-arrow">›</div></a>' +
+  '</div>' +
+  '<div class="card" style="margin-top:16px;"><div class="sec-label" style="margin-top:0;">📍 ที่อยู่ติดต่อส่งเอกสาร</div>' +
+    '<p style="font-size:13px; color:var(--ink3); line-height:1.9;">งานทุนการศึกษา กยศ. สำนักกิจการนักศึกษา<br>ห้อง 4-0809 ชั้น 8 อาคาร CP ALL Academy<br>สถาบันการจัดการปัญญาภิวัฒน์<br>85/1 หมู่ 2 ถนนแจ้งวัฒนะ ตำบลบางตลาด อำเภอปากเกร็ด จังหวัดนนทบุรี 11120</p></div>';
+}
+
+/* ═══════════ CHECKLIST MODAL ═══════════ */
+function mkCLItems(items, prefix){
+  return items.map(function(t, i){
+    return '<label class="cl-row"><input type="checkbox">' + t + '</label>';
+  }).join('');
+}
+
+function openChecklist(){
+  var isNew = app.res && app.res.type === 'new';
+  var html;
+
+  if (isNew) {
+    var newBase = [
+      'สัญญากู้ยืมเงิน (7 หน้า)',
+      'สำเนาบัตรประชาชนผู้กู้ยืม (เซ็น "สำเนาถูกต้อง")',
+      'สำเนาบัตรประชาชนผู้แทนโดยชอบธรรม <span style="color:var(--ink4);">— เฉพาะอายุต่ำกว่า 20 ปี</span>',
+      'แบบยืนยันการเบิกเงินกู้ยืม ภาคเรียนที่ 1/2569'
+    ];
+    html =
+      '<div class="cl-set-hd cls1">📦 ชุดที่ 1 · เอกสารพื้นฐาน</div>' + mkCLItems(newBase) +
+      '<div class="cl-set-hd cls2" style="margin-top:16px;">📦 ชุดที่ 2 · เอกสารเพิ่มเติม (เหมือนชุด 1 + จิตอาสา)</div>' +
+      mkCLItems(newBase) +
+      mkCLItems(['จิตอาสา ไม่น้อยกว่า 1 ชั่วโมง']) +
+      '<div class="cl-note">💡 <b>จิตอาสาของ SET:</b> ไม่ต้องใช้แบบฟอร์ม พิมพ์เกียรติบัตรแนบมาส่งได้เลย</div>';
+  } else {
+    var oldBase = [
+      'แบบยืนยันการเบิกเงินกู้ยืม ภาคเรียนที่ 1/2569',
+      'สำเนาบัตรประชาชนผู้กู้ยืม (เซ็น "สำเนาถูกต้อง")',
+      'สำเนาบัตรประชาชนผู้แทนโดยชอบธรรม <span style="color:var(--ink4);">— เฉพาะอายุต่ำกว่า 20 ปี</span>'
+    ];
+    html =
+      '<div class="cl-set-hd cls1">📦 ชุดที่ 1</div>' + mkCLItems(oldBase) +
+      '<div class="cl-set-hd cls2" style="margin-top:16px;">📦 ชุดที่ 2 · เหมือนชุด 1 + จิตอาสา 18 ชม. + เอกสารรับรองรายได้</div>' +
+      mkCLItems(oldBase) +
+      mkCLItems(['จิตอาสา จำนวน 18 ชั่วโมง (ลงพื้นที่จริง หรือจิตอาสาออนไลน์ SET-eLearning)']) +
+      '<div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--ln);">' +
+      '<div style="font-size:11.5px; font-weight:700; color:var(--p); margin-bottom:6px;">🟢 มีรายได้ประจำ — เลือกอย่างใดอย่างหนึ่ง</div>' +
+      mkCLItems(['สลิปเงินเดือน', 'หนังสือรับรองเงินเดือน', 'ภ.ง.ด.90 / ภ.ง.ด.91']) +
+      '<div style="font-size:11.5px; font-weight:700; color:#B45309; margin:10px 0 6px;">🟡 ไม่มีรายได้ประจำ</div>' +
+      mkCLItems(['หนังสือรับรองรายได้ครอบครัว (กยศ.102) พร้อมสำเนาบัตรข้าราชการผู้รับรอง']) +
+      '</div>';
+  }
+
+  var modalHtml = '<div class="modal-bg show" onclick="if(event.target===this)closeModal()"><div class="modal-box">' +
+    '<div class="modal-hd"><div><h3>✅ เช็กลิสต์ก่อนส่งเอกสารฉบับจริง</h3>' +
+    '<p style="font-size:11.5px; color:var(--ink3); margin-top:3px;">สำหรับ' + (isNew ? '"รายใหม่"' : '"รายเก่า"') +
+    ' <b style="color:var(--red);">จำนวน 2 ชุด</b></p></div><button class="modal-x" onclick="closeModal()">✕</button></div>' +
+    '<div class="modal-body">' + html + '</div></div></div>';
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML = ''; }
+
+/* ═══════════ PRINT: ENVELOPE + PROOF SLIP ═══════════ */
+function printEnv(){
+  var addr = document.getElementById('senderAddr').value.trim();
+  if (!addr) { toast('⚠️ กรุณากรอกที่อยู่ก่อนพิมพ์'); return; }
+  var r = app.res;
+  var win = window.open('', '_blank', 'width=800,height=600');
+  if (!win) { toast('⚠️ กรุณาอนุญาต Popup'); return; }
+  win.document.write('<html><head><meta charset="UTF-8"><title>ใบจ่าหน้าซอง EMS</title>' +
+    '<style>body{font-family:sans-serif;padding:30px;}h2{color:#0A5C3E;}p{line-height:1.8;}</style></head><body>' +
+    '<h2>ใบจ่าหน้าซอง EMS</h2><p><b>จาก:</b><br>' + esc(r.name) + '<br>' + esc(addr).replace(/\n/g,'<br>') + '</p>' +
+    '<p><b>ถึง:</b><br>งานทุนการศึกษา กยศ. สถาบันการจัดการปัญญาภิวัฒน์<br>85/1 หมู่ 2 ถนนแจ้งวัฒนะ ตำบลบางตลาด<br>อำเภอปากเกร็ด จังหวัดนนทบุรี 11120<br>โทร. ' + esc(RCP.TEL) + '</p>' +
+    '<script>setTimeout(function(){window.print();},400);<' + '/script></body></html>');
+  win.document.close();
+}
+
+function printProofSlip(){
+  var r = app.res;
+  var win = window.open('', '_blank', 'width=700,height=800');
+  if (!win) { toast('⚠️ กรุณาอนุญาต Popup'); return; }
+  var barcodeSvg = '';
+  try {
+    var tmp = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    if (typeof JsBarcode !== 'undefined') { JsBarcode(tmp, app.sid, {format:'CODE128', lineColor:'#0C1A14', width:2, height:50, fontSize:13, margin:6}); barcodeSvg = tmp.outerHTML; }
+  } catch(e){}
+  win.document.write('<html><head><meta charset="UTF-8"><title>ใบยืนยันผล</title>' +
+    '<style>body{font-family:sans-serif;padding:30px;text-align:center;}h2{color:#0A5C3E;}</style></head><body>' +
+    '<h2>✅ ผ่านการตรวจสอบเอกสารออนไลน์</h2><p>' + esc(r.name) + ' — รหัส ' + esc(app.sid) + '</p>' + barcodeSvg +
+    '<p style="font-size:12px;color:#666;margin-top:16px;">แนบใบนี้ไว้ด้านบนของเอกสารฉบับจริง</p>' +
+    '<script>setTimeout(function(){window.print();},400);<' + '/script></body></html>');
+  win.document.close();
+}
+
+/* ═══════════ HELPERS ═══════════ */
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ═══════════ CHECKLIST PROGRESS (persists in localStorage) ═══════════ */
+function getPrepState(type){
+  try {
+    var raw = localStorage.getItem('pim_prep_v1');
+    var all = raw ? JSON.parse(raw) : {};
+    return all[type] || [];
+  } catch(e){ return []; }
+}
+function setPrepState(type, arr){
+  try {
+    var raw = localStorage.getItem('pim_prep_v1');
+    var all = raw ? JSON.parse(raw) : {};
+    all[type] = arr;
+    localStorage.setItem('pim_prep_v1', JSON.stringify(all));
+  } catch(e){}
+}
+function togglePrepItem(type, idx){
+  var arr = getPrepState(type);
+  arr[idx] = !arr[idx];
+  setPrepState(type, arr);
+  document.getElementById('content').innerHTML = renderGuide();
+}
+function driveImgTag(fileId, w, cls, alt, extraHtml){
+  var primary = 'https://lh3.googleusercontent.com/d/' + fileId + '=w' + w;
+  var fallback = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w' + w;
+  return '<img class="' + cls + '" src="' + primary + '" alt="' + esc(alt) + '" loading="lazy" onerror="this.onerror=null;this.src=\'' + fallback + '\';">' + (extraHtml || '');
+}
+function toast(msg){
+  var wrap = document.getElementById('toastWrap');
+  if (!wrap) return;
+  var el = document.createElement('div');
+  el.className = 'toast-item';
+  el.textContent = msg;
+  wrap.appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add('show'); });
+  setTimeout(function(){
+    el.classList.remove('show');
+    setTimeout(function(){ el.remove(); }, 250);
+  }, 3200);
+}
+function scrollToId(id){ var el = document.getElementById(id); if (el) el.scrollIntoView({behavior:'smooth', block:'start'}); }
+
+function launchConfetti(){
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var colors = ['#0A5C3E', '#1FA576', '#BB9A45', '#ffffff', '#A7DEC3'];
+  for (var i = 0; i < 46; i++) (function(c){
+    var p = document.createElement('div');
+    var sz = 5 + Math.random() * 8;
+    p.style.cssText = 'position:fixed; z-index:500; pointer-events:none; width:' + sz + 'px; height:' + sz + 'px; background:' + c +
+      '; border-radius:' + (Math.random() > .5 ? '50%' : '3px') + '; left:' + (Math.random() * 100) + 'vw; top:-16px;' +
+      'animation:confettiFall ' + (1.4 + Math.random() * 1.6) + 's ease-in ' + (Math.random() * .5) + 's forwards;';
+    document.body.appendChild(p);
+    setTimeout(function(){ p.remove(); }, 3600);
+  })(colors[Math.floor(Math.random() * colors.length)]);
+}
+
+/* ═══════════ INIT ═══════════ */
+renderSidebar();
+renderContent();
+updateCountdownTick();
+
+window.addEventListener('scroll', function(){
+  var btt = document.getElementById('bttBtn');
+  if (btt) btt.classList.toggle('show', window.scrollY > 320);
+}, { passive: true });
+</script>
+</body>
+</html>
+
