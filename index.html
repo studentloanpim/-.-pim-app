@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>กยศ. PIM Online</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0B7A4C">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="กยศ. PIM">
+
+  <style>
+    html, body {
+      margin: 0; height: 100%;
+      background: linear-gradient(135deg, #0F9D63 0%, #0B7A4C 55%, #075C3A 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'IBM Plex Sans Thai', 'Segoe UI', sans-serif;
+    }
+    .wrap { text-align: center; color: #fff; padding: 0 32px; }
+    img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+    h1 { font-size: 18px; margin: 20px 0 6px; }
+    p { margin: 0 0 28px; font-size: 14px; opacity: .85; line-height: 1.6; }
+    .enterBtn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #F6D889; color: #0B4A30; font-weight: 700; font-size: 16px;
+      border: none; border-radius: 999px; padding: 14px 32px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.25);
+      text-decoration: none;
+    }
+    .enterBtn:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="icon-192.png" alt="กยศ. PIM">
+    <h1>กยศ. PIM Online</h1>
+    <p>งานทุนการศึกษา กยศ.<br>สถาบันการจัดการปัญญาภิวัฒน์</p>
+    <a class="enterBtn" href="https://script.google.com/macros/s/AKfycbzcg4MWypzG1XMNMI0-G9KNhKfDeggXYmV8sI64nsN6KN_PaZyHQIXsgf5kyZiTZicrhQ/exec">
+      เข้าสู่ระบบ →
+    </a>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
